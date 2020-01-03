@@ -10,7 +10,7 @@
 #'     \item{treefunc}{Text of the decision tree exported from AMUA.}
 #'
 #' @export
-txt_parse <- function(path_to_txt) {
+parse_amua_tree <- function(path_to_txt) {
   if (!is.character(path_to_txt)) stop("path_to_txt should be a string")
 
 
@@ -34,8 +34,8 @@ txt_parse <- function(path_to_txt) {
   ix_tree <- c(ix_tree[1] : (ix_tree[2] + 1))
 
   txt[ix_param[2:length(ix_param)]] <- ""
-  txt[ix_param[2]] <- " for(i in c(1:length(params))) {"
-  txt[ix_param[3]] <- "  assign(names(params)[i], params[[i]])"
+  txt[ix_param[2]] <- " for(i in c(1:length(params_basecase))) {"
+  txt[ix_param[3]] <- "  assign(names(params_basecase)[i], params_basecase[[i]])"
   txt[ix_param[4]] <- " }"
 
   ix_class <- which(grepl("setRefClass", txt))
@@ -48,22 +48,24 @@ txt_parse <- function(path_to_txt) {
 }
 
 
-#' @title The wrapper function of the decision tree model exported from AMUA
+#' @title The function converting the decision tree model exported from AMUA
 #'
-#' @description This is the wrapper function of the decision tree movel exported from AMUA.
-#'              It is required to run `txt_parse()` first before running this function.
+#' @description This is a function converting the decision tree model exported from AMUA.
+#'              It is required to run `parse_amua_tree()` first before running this function.
 #'
-#' @param params A list of parameters with the basecase values. The list should be organized
+#' @param params_basecase A list of parameters with the basecase values. The list should be organized
 #'        as `list(par1 = 0.5, par2 = 0.2)` with the parameter names and values. For the AMUA
-#'        decision tree model, this argument is the 1st output of `txt_parse()`.
-#' @param treefunc Text data of the AMUA decision model. This argument is the 2nd output of `txt_parse()`.
+#'        decision tree model, this argument is the 1st output of `parse_amua_tree()`.
+#' @param treefunc Text data of the AMUA decision model. This argument is the 2nd output of `parse_amua_tree()`.
 #' @param popsize The population size of the decision problem. The default is 1.
 #'
 #' @return The function returns a `data.frame` with the strategy name as the first column and the
 #'         expected effectiveness and cost are in the following columns.
 #'
+#' @import dplyr
+#'
 #' @export
-dectree_wrapper <- function(params, treefunc, popsize = 1) {
+dectree_convert <- function(params_basecase, treefunc, popsize = 1) {
   suppressMessages(require(dplyr))
   # wrapper for decision tree exported from AMUA
   eval(parse(text = treefunc))
@@ -82,7 +84,79 @@ dectree_wrapper <- function(params, treefunc, popsize = 1) {
 
   output <- data.frame(output)
   output <- output %>%
-    mutate_at(vars(starts_with("expected")), ~as.numeric(as.character(.)) * popsize)
+    mutate_at(vars(starts_with("expected")), ~as.numeric(as.character(.)) * popsize) %>%
+    rename_at(vars(contains("Cost")), funs(gsub("expected", "", .)))
   return(output)
 }
 
+
+#' @title The decision tree wrapper
+#'
+#' @description This is a wrapper function handling only one set of input parameters or multiple sets
+#'              of input parameters.
+#'
+#' @param params_basecase A list of parameters with the basecase values. The list should be organized
+#'        as `list(par1 = 0.5, par2 = 0.2, par3 = 0.1, par4 = 0.5)` with the parameter names and values. For the AMUA
+#'        decision tree model, this argument is the 1st output of `parse_amua_tree()`.
+#' @param treefunc Text data of the AMUA decision model. This argument is the 2nd output of `parse_amua_tree()`.
+#' @param popsize The population size of the decision problem. The default is 1.
+#' @param vary_param_samp The default is set to `NULL` if there is no varying parameters.
+#'        If some parameters are varying, this argument takes a `data.frame` of different
+#'        parameter values. The column names should be a subset of the parameter names in `params_basecase`.
+#'
+#' @return The function returns either a `data.frame` or a list of `data.frame`s. If there is no varying
+#'         parameters, the function will return only one `data.frame` with all the cost and effectiveness
+#'         of each strategy. If there are varying parameters (when `vary_param_samp` is not `NULL`), the
+#'         function will return a list of `data.frame`s. If there are multiple outcomes of the
+#'         decision tree model, the number of the elements in the list is the number of outcomes plus 1.
+#'         Each outcome has a `data.frame` of outcomes calculated based on the different
+#'         parameter values provided to the model for each strategy. In addition, the function will return
+#'         the parameter set for the varying parameters.
+#'
+#' @import dplyr
+#'
+#' @export
+dectree_wrapper <- function(params_basecase, treefunc, popsize = 1, vary_param_samp = NULL) {
+  if (!is.list(params_basecase)) stop("params_basecase should be a list")
+  if (is.null(names(params_basecase)) | any(is.na(names(params_basecase)))) stop("please provide parameter names to the params_basecase")
+  if(!is.character(treefunc)) stop("treefunc should be text")
+
+  if (is.null(vary_param_samp)) {
+    tree_out <- dectree_convert(params_basecase = params_basecase,
+                                treefunc = treefunc, popsize = popsize)
+  } else {
+    # Checking input arguments
+    if (!is.data.frame(vary_param_samp)) stop("vary_param_samp should be in a data.frame")
+    if (any(!(colnames(vary_param_samp) %in% names(params_basecase)))) {
+      rm_names <- colnames(vary_param_samp)[!(colnames(vary_param_samp) %in% names(params_basecase))]
+      warning(paste0(rm_names, " are not the parameters included in params_basecase. The function will ingore these parameters."))
+    }
+
+    n_samp <- nrow(vary_param_samp)
+    tmp_samp <- data.frame(lapply(params_basecase, function(x) rep(x, n_samp)))
+    colnames(tmp_samp) <- names(params_basecase)
+    replace_col <- colnames(vary_param_samp)[colnames(vary_param_samp) %in% names(params_basecase)]
+    tmp_samp[, replace_col] <- vary_param_samp[, replace_col]
+    sim_out <- lapply(c(1:n_samp), function(x) {
+      rep_param <- tmp_samp[x, ]
+      dectree_convert(params_basecase = rep_param,
+                      treefunc = treefunc,
+                      popsize = popsize)
+    })
+    n_outcomes <- ncol(sim_out[[1]]) - 1
+    outcome_name <- colnames(sim_out[[1]])[-1]
+    strategy_name <- as.character(tree_output$name)
+    tree_out <- vector(mode = "list", n_outcomes)
+    names(tree_out) <- outcome_name
+    for (i in c(1:n_outcomes)) {
+      tmp_out <- do.call(rbind, lapply(sim_out, function(x) {
+        x[, outcome_name[i]]
+      }))
+      tmp_out <- data.frame(tmp_out)
+      colnames(tmp_out) <- strategy_name
+      tree_out[[outcome_name[i]]] <- tmp_out
+    }
+    tree_out$param_samp <- vary_param_samp
+  }
+  return(tree_out)
+}

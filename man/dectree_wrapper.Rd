@@ -2,24 +2,34 @@
 % Please edit documentation in R/tree_wrapper.R
 \name{dectree_wrapper}
 \alias{dectree_wrapper}
-\title{The wrapper function of the decision tree model exported from AMUA}
+\title{The decision tree wrapper}
 \usage{
-dectree_wrapper(params, treefunc, popsize = 1)
+dectree_wrapper(params_basecase, treefunc, popsize = 1, vary_param_samp = NULL)
 }
 \arguments{
-\item{params}{A list of parameters with the basecase values. The list should be organized
-as `list(par1 = 0.5, par2 = 0.2)` with the parameter names and values. For the AMUA
-decision tree model, this argument is the 1st output of `txt_parse()`.}
+\item{params_basecase}{A list of parameters with the basecase values. The list should be organized
+as `list(par1 = 0.5, par2 = 0.2, par3 = 0.1, par4 = 0.5)` with the parameter names and values. For the AMUA
+decision tree model, this argument is the 1st output of `parse_amua_tree()`.}
 
-\item{treefunc}{Text data of the AMUA decision model. This argument is the 2nd output of `txt_parse()`.}
+\item{treefunc}{Text data of the AMUA decision model. This argument is the 2nd output of `parse_amua_tree()`.}
 
 \item{popsize}{The population size of the decision problem. The default is 1.}
+
+\item{vary_param_samp}{The default is set to `NULL` if there is no varying parameters.
+If some parameters are varying, this argument takes a `data.frame` of different
+parameter values. The column names should be a subset of the parameter names in `params_basecase`.}
 }
 \value{
-The function returns a `data.frame` with the strategy name as the first column and the
-        expected effectiveness and cost are in the following columns.
+The function returns either a `data.frame` or a list of `data.frame`s. If there is no varying
+        parameters, the function will return only one `data.frame` with all the cost and effectiveness
+        of each strategy. If there are varying parameters (when `vary_param_samp` is not `NULL`), the
+        function will return a list of `data.frame`s. If there are multiple outcomes of the
+        decision tree model, the number of the elements in the list is the number of outcomes plus 1.
+        Each outcome has a `data.frame` of outcomes calculated based on the different
+        parameter values provided to the model for each strategy. In addition, the function will return
+        the parameter set for the varying parameters.
 }
 \description{
-This is the wrapper function of the decision tree movel exported from AMUA.
-             It is required to run `txt_parse()` first before running this function.
+This is a wrapper function handling only one set of input parameters or multiple sets
+             of input parameters.
 }
