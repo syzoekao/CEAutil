@@ -13,28 +13,220 @@ description: Introduction to R for cost-effectiveness analysis
 
 # R Basics
 
+This lecture is to introduce the elements in R programming language that are relevant to decision model and decision analysis. 
 
+## Agenda 
+
+* Install R and RStudio
+* Data type
+* Data input and output
+* For loop
+* If statement
+* R function
+* Plots 
+* Useful packages in the class 
+* Project management
 
 ## Install R and RStudio
 
-## Data type
+* You could install R [here](https://repo.miserver.it.umich.edu/cran/). 
+  + Be aware of your operating system
+  
+* The original R interface is not user-friendly. We recommend using the RStudio IDE [here](https://rstudio.com/products/rstudio/download/) 
+  + Just download the free version!
+  
+* Open RStudio 
+![](Figure/RStudioIDE.png)
+
+## Data type 
+
+* In this class, we will mainly use `vector`, `matrix`, `array`, `list`, and `data.frame`. 
+* These types of data are used intensively in constructing Markov model and in the package of decision analyses
+
+### Vector 
+
+```{r}
+x1 <- c(3, 1, 4)
+print(x1)
+
+x2 <- c(2, 7, 1)
+print(x1 + x2)
+
+future_human <- c("earther", "martian", "belter")
+print(future_human)
+```
+
+* You could combine different type of vectors
+  + This operation coerces the data type into text
+
+```{r}
+x1_and_future_human <- c(x1, future_human)
+print(x1_and_future_human)
+```
+
+* We often create the initial status in the Markov model using vector
+  + The distribution of healthy, sick, and dead in a population 
+  + You can name the elements in the vector
+
+```{r}
+v_init <- c(0.9, 0.09, 0.01)
+names(v_init) <- c("healthy", "sick", "dead")
+print(v_init)
+print(sum(v_init))
+```
+
+* Access a specific element in a vector 
+
+```{r}
+print(v_init[2])
+print(v_init["sick"])
+```
 
 ### Matrix & Array
 
-### Data frame
+* Matrix is defined with two dimension using the numbers of columns and rows
 
-### List
+```{r}
+x <- matrix(c(1, 0, 0, 
+              0.8, 0.2, 0, 
+              0, 0, 1), 
+            byrow = T, nrow = 3)
+print(x)
+```
 
+* We often use this as the basis of transition matrix in Markov model or use this to trace the outcomes over time. 
+* You could also provide the names to the columns and rows
+
+```{r}
+rownames(x) <- colnames(x) <- c("healthy", "sick", "dead")
+print(x)
+```
+
+* We can access the value of a specific cell
+
+```{r}
+print(x[2, 2])
+print(x["sick", "sick"])
+```
+
+* Matrix multiplication is often used in Markov models. For example, we can multiply the initial state with the transition matrix
+  + `v_init` is not a matrix. Thus, we use `t()` to convert `v_init` into a $1 \times 3$ matrix. 
+  + `%*%` is the symbol for matrix multiplication in `R`
+
+```{r}
+print(t(v_init) %*% x)
+```
+
+* If transition probabilities in the transition matrix vary with time, `array()` is more useful. 
+* `array()` can be seen as a data type that stores multiple matrices all at once. 
+* Let's create two transition matrices and combine them into an array. 
+
+```{r}
+tr1 <- x
+tr2 <- matrix(c(0.9, 0.1, 0, 
+                0.7, 0.2, 0.1, 
+                0, 0, 1), 
+              byrow = T, nrow = 3, 
+              dimnames = list(c("healthy", "sick", "dead"), 
+                              c("healthy", "sick", "dead")))
+```
+
+* Create an array with dimension $3 \times 3 \times 2$
+
+```{r}
+tr_array <- array(dim = c(3, 3, 2), 
+                  data = cbind(tr1, tr2), 
+                  dimnames = list(c("healthy", "sick", "dead"), 
+                              c("healthy", "sick", "dead"), 
+                              c(1, 2)))
+print(tr_array)
+```
+
+* We can access each transition matrix by proper indexing 
+
+```{r}
+print(tr_array[ , ,  1])
+print(tr_array[ , ,  2])
+```
+
+* We can also access a specific value of the transition array
+
+```{r}
+print(tr_array[1, 2, 1])
+```
+
+* Similarly, we can perform calculation using a slice of array
+
+```{r}
+v_time2 <- t(v_init) %*% tr_array[ , , 1]
+print(v_time2)
+
+v_time3 <- v_time2 %*% tr_array[ , , 2]
+print(v_time3)
+```
+
+### List 
+
+* List can combine different types of data without affecting the data type. 
+
+```{r}
+temp_ls <- list(future_human = future_human, v_init = v_init, tr_array = tr_array)
+print(temp_ls)
+```
+
+* There are two approaches to access an element in the list 
+
+```{r}
+print(temp_ls[[1]])
+print(temp_ls$v_init)
+```
+
+* You can access a specific element in an element of a list
+```{r}
+print(temp_ls$tr_array[, , 1])
+```
+
+### `data.frame`
+
+* If your Stats or Biostats classes use `R`, you probably have encountered `data.frame()` very frequently.
+* Let's create a `data.frame()`
+
+```{r}
+profile <- data.frame(name = c("Amos", "Bobbie", "Naomi"), 
+                      human_type = c("earther", "martian", "belter"), 
+                      height = c(1.8, 2.1, 1.78))
+print(profile)
+```
+
+* `data.frame()` is essentially a named list of vectors with the same length. 
+
+```{r}
+typeof(profile)
+length(profile$name) 
+length(profile$human_type)
+length(profile$height)
+```
 
 ## Data input and output
 
+* If you have external datasets, you could load or read in the datasets. 
+* The data extension of the external datasets could be `.RData`, `.rda`, `.rds`, `.csv`, `.txt`, etc. There are multiple ways to load, read, save, or write different types of data. You could find the information [here](https://bookdown.org/lyzhang10/lzhang_r_tips_book/how-to-read-data-into-r.html) and [here](https://mgimond.github.io/ES218/Week02b.html). 
+
 ## For loop 
+
+* 
 
 ## If statement
 
 ## R function
 
 ## Plots
+
+## Useful packages in the class 
+
+## Project management
+
+
 
 # Decision tree
 
@@ -603,13 +795,14 @@ print(res)
 * One-way sensitivity analysis
 * Two-way sensitivity analysis
 * Probabilistic sensitivity analysis
+* Dampack and markov model wrapper 
 
 ## Introduction of `dampack`
 
 * `dampack` is the decision analysis modeling package [here](https://github.com/DARTH-git/dampack). 
 * We have used some functionality in the past.  
 * This package includes functionalities for basic and advanced decision analysis. 
-* We will illustrate deterministic analysis and probabilistic analysis using the Dracula example. 
+* We will illustrate deterministic analysis and probabilistic analysis using the Dracula example and also show how to use dampack with the Markov model wrapper. 
 
 ```{r message = FALSE, warning = FALSE}
 library(CEAutil)
@@ -674,6 +867,7 @@ plot(owsa_out$owsa_expectedEff1)
 plot(owsa_out$owsa_Cost)
 ```
 
+
 ## Two-way sensitivity analysis
 
 * Investigate the changes in the outcomes by varying two parameters simultaneously. 
@@ -715,8 +909,49 @@ plot(twsa_out$twsa_Cost)
 
 * `run_psa`
 
+## Conducting decision analysis using Markov model
 
+```{r warning = FALSE}
+library(CEAutil)
+library(data.table)
+library(dampack)
+data(ONtan)
+ltable <- ONtan$lifetable
+behavior <- ONtan$behavior
 
+vary_param_ls <- list(p_nontan_to_cancer = 0.005,
+                      p_regtan_to_cancer = 0.04,
+                      p_cancer_to_dead = 0.07)
+
+other_input_ls <- list(ltable = ltable, 
+                       behavior = behavior, 
+                       state_names = c("nontan", "regtan", "cancer", "deadnature", "deadcancer"),
+                       n_t = 100,
+                       v_init = c(1, 0, 0, 0, 0))
+
+res <- markov_decision_wrapper(vary_param_ls = vary_param_ls, 
+                        other_input_ls = other_input_ls, 
+                        userfun = markov_model, 
+                        strategy_set = c("null", "targeted ban", "universal ban"))
+
+params_range <- data.frame(pars = c("p_regtan_to_cancer", "p_cancer_to_dead"), 
+                           min = c(0.01, 0.01), 
+                           max = c(0.1, 0.1))
+
+owsa_out <- run_owsa_det(params_range, vary_param_ls, nsamp = 100, 
+                         FUN = markov_decision_wrapper, 
+                         userfun = markov_model, 
+                         other_input_ls = other_input_ls, 
+                         strategy_set = c("null", "targeted ban", "universal ban"))
+plot(owsa_out)
+
+twsa_out <- run_twsa_det(params_range, vary_param_ls, nsamp = 10, 
+                         FUN = markov_decision_wrapper, 
+                         userfun = markov_model, 
+                         other_input_ls = other_input_ls, 
+                         strategy_set = c("null", "targeted ban", "universal ban"))
+plot(twsa_out)
+```
 
 
 
