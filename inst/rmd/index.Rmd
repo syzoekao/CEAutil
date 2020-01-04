@@ -58,7 +58,8 @@ print(future_human)
 ```
 
 * You could combine different type of vectors
-  + This operation coerces the data type into text
+    
+    + This operation coerces the data type into text
 
 ```{r}
 x1_and_future_human <- c(x1, future_human)
@@ -188,6 +189,7 @@ print(temp_ls$v_init)
 ```
 
 * You can access a specific element in an element of a list
+
 ```{r}
 print(temp_ls$tr_array[, , 1])
 ```
@@ -501,7 +503,8 @@ library(CEAutil)
 ```
 
 * We will use two functions from the package to convert the R script exported from Amua. 
-1. `parse_amua_tree()`: 
+
+    1. `parse_amua_tree()`: 
 
 This function only takes an input argument, the path to the `main.R` file of the Amua decision model. The function returns a list of outputs. Output 1 `param_ls` is a list of input parameters with basecase values used in Amua. Output 2 `treefunc` is the R code of the Amua decision model formatted as text. 
 
@@ -512,7 +515,7 @@ treetxt <- parse_amua_tree("AmuaExample/DraculaParty_Export/main.R")
 print(treetxt$param_ls)
 ```
 
-2. `dectree_wrapper()`: 
+    2. `dectree_wrapper()`: 
 
 We use the two outputs from the `parse_amua_tree()` as the input arguments in the `dectree_wrapper()`. The input arguments in the wrapper function include `params_basecase`, `treefunc`, and `popsize`. `params_basecase` takes a list of named input parameters. `treefunc` takes the text file organized by the `parse_amua_tree()`. `popsize` is defaulted as 1 but you could change your population size. 
 
@@ -643,15 +646,18 @@ Before doing any actual coding:
 
 1. Draw your Markov model diagram
 2. Figure out your parameters 
-  + which are fixed? 
-  + which are time varying? 
-  + do you have parameters that require calibration? 
+
+    + which are fixed? 
+    + which are time varying? 
+    + do you have parameters that require calibration? 
 
 3. What is the time horizon? 
-  + 100 years
+  
+    + 100 years
 
 4. What is the cycle length? 
-  + annual time step
+    
+    + annual time step
 
 Here is the Markov model diagram: 
 
@@ -695,9 +701,10 @@ p_cancer_to_dead <- 0.07
 ```
 
 * In addition, we have other required variables 
-  + timehorizon (`n_t`)
-  + names of each health state (`state_names`)
-  + initial status (`v_init`)
+
+    + timehorizon (`n_t`)
+    + names of each health state (`state_names`)
+    + initial status (`v_init`)
 
 ```{r}
 n_t <- 100 
@@ -876,8 +883,9 @@ for(t in 1 : n_t){
 ### Step 5. Organize outputs
 
 * The outcome in this example is "expected life years" (`LE`). Therefore, we remove the last two columns.
-  + Calculate the sums by each row for the remaining columns. 
-  + Calculate the life expectancy by summing up all the values. 
+  
+    + Calculate the sums by each row for the remaining columns. 
+    + Calculate the life expectancy by summing up all the values. 
 
 * We organize the output in a `data.frame` with the strategy in the first column and `LE` as the second column. 
 * You could add more columns to the `data.frame` if you have more outcomes of interest (e.g., cost) 
@@ -1005,7 +1013,7 @@ run_owsa_det(params_range, params_basecase, nsamp = 100, FUN,
              outcomes = NULL, strategies = NULL, ...)
 ```
 
-  + `params_range`: a `data.frame` with 3 columns in the following order: "pars", "min", and "max". 
+    + `params_range`: a `data.frame` with 3 columns in the following order: "pars", "min", and "max". 
   
 ```{r}
 params_range <- data.frame(pars = c("p_bite", "C_drug", "p_inf_bitten"), 
@@ -1014,7 +1022,7 @@ params_range <- data.frame(pars = c("p_bite", "C_drug", "p_inf_bitten"),
 print(params_range)
 ```
 
-  + `params_basecase`: a named list of basecase values for input parameters needed by the user-defined decision function `FUN`.
+    + `params_basecase`: a named list of basecase values for input parameters needed by the user-defined decision function `FUN`.
   
 ```{r}
 treetxt <- parse_amua_tree("AmuaExample/DraculaParty_Export/main.R")
@@ -1023,19 +1031,19 @@ param_ls <- treetxt[["param_ls"]] # This is a list of parameters with basecase v
 print(param_ls)
 ```
 
-  + `nsamp`: number of samples. Default is 100. 
+    + `nsamp`: number of samples. Default is 100. 
 
-  + `FUN`: user-defined function that takes the basecase in `params_basecase` and `...` to produce the outcome(s) of interest. The `FUN` must return a dataframe where the first column are the strategy names and the rest of the columns must be outcomes. The function used in our tree example is `dectree_wrapper()`. 
+    + `FUN`: user-defined function that takes the basecase in `params_basecase` and `...` to produce the outcome(s) of interest. The `FUN` must return a dataframe where the first column are the strategy names and the rest of the columns must be outcomes. The function used in our tree example is `dectree_wrapper()`. 
 
-  + `outcomes`: The outcomes of interest. If you use the default setting `NULL`, `run_owsa_det` will run the one-way sensitivity analysis for every outcome. In our case, the outcomes include expectedEff1, expectedEff2, and Cost. You could also specify a subset of outcomes: 
+    + `outcomes`: The outcomes of interest. If you use the default setting `NULL`, `run_owsa_det` will run the one-way sensitivity analysis for every outcome. In our case, the outcomes include expectedEff1, expectedEff2, and Cost. You could also specify a subset of outcomes: 
 
 ```{r}
 outcomes = c("expectedEff1", "Cost")
 ```
   
-  + `strategies`: You can leave this as default or give your favorite names to the strategies. 
+    + `strategies`: You can leave this as default or give your favorite names to the strategies. 
 
-  + `...`: Additional arguments for the user-defined function `FUN`. In our case, `dectree_wrapper()` requires `params_basecase`, `treefunc`, and `popsize`. We have already set up the `params_basecase`. Thus, for `...`, we need to add `treefunc` and `popsize`. 
+    + `...`: Additional arguments for the user-defined function `FUN`. In our case, `dectree_wrapper()` requires `params_basecase`, `treefunc`, and `popsize`. We have already set up the `params_basecase`. Thus, for `...`, we need to add `treefunc` and `popsize`. 
 
 ```{r}
 owsa_out <- run_owsa_det(params_range, param_ls, nsamp = 100, 
