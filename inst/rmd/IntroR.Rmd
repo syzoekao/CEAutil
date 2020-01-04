@@ -33,7 +33,8 @@ This lecture is to introduce the elements in R programming language that are rel
   + Be aware of your operating system
   
 * The original R interface is not user-friendly. We recommend using the RStudio IDE [here](https://rstudio.com/products/rstudio/download/) 
-  + Just download the free version!
+
+    + Just download the free version!
   
 * Open RStudio 
 ![](Figure/RStudioIDE.png)
@@ -65,8 +66,9 @@ print(x1_and_future_human)
 ```
 
 * We often create the initial status in the Markov model using vector
-  + The distribution of healthy, sick, and dead in a population 
-  + You can name the elements in the vector
+  
+    + The distribution of healthy, sick, and dead in a population 
+    + You can name the elements in the vector
 
 ```{r}
 v_init <- c(0.9, 0.09, 0.01)
@@ -75,11 +77,14 @@ print(v_init)
 print(sum(v_init))
 ```
 
-* Access a specific element in a vector 
+* Access an element(s) in a vector 
 
 ```{r}
 print(v_init[2])
 print(v_init["sick"])
+
+print(v_init[2:3])
+print(v_init[c("sick", "dead")])
 ```
 
 ### Matrix & Array
@@ -110,8 +115,9 @@ print(x["sick", "sick"])
 ```
 
 * Matrix multiplication is often used in Markov models. For example, we can multiply the initial state with the transition matrix
-  + `v_init` is not a matrix. Thus, we use `t()` to convert `v_init` into a $1 \times 3$ matrix. 
-  + `%*%` is the symbol for matrix multiplication in `R`
+ 
+    + `v_init` is not a matrix. Thus, we use `t()` to convert `v_init` into a $1 \times 3$ matrix. 
+    + `%*%` is the symbol for matrix multiplication in `R`
 
 ```{r}
 print(t(v_init) %*% x)
@@ -207,25 +213,204 @@ length(profile$human_type)
 length(profile$height)
 ```
 
+* Access elements in `data.frame()`
+
+```{r}
+profile[profile$name == "Bobbie", ]
+profile[profile$name == "Bobbie", "height"]
+```
+
 ## Data input and output
 
 * If you have external datasets, you could load or read in the datasets. 
 * The data extension of the external datasets could be `.RData`, `.rda`, `.rds`, `.csv`, `.txt`, etc. There are multiple ways to load, read, save, or write different types of data. You could find the information [here](https://bookdown.org/lyzhang10/lzhang_r_tips_book/how-to-read-data-into-r.html) and [here](https://mgimond.github.io/ES218/Week02b.html). 
 
-## For loop 
+## Loops 
 
-* 
+* Loops help repeat routine or calculations. 
+* Let's watch a video from Codecademy. 
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+# library("htmltools")
+library("vembedr")
+
+embed_url("https://www.youtube.com/watch?v=wxds6MAtUQ0")
+```
+
+* Components included in loops 
+
+    + A well-defined routine/process
+    + When to start
+    + When to stop 
+
+* The most used loop is `for` loop in many decision models. The structure follows: 
+
+```{r, eval = FALSE}
+for (i in c(start : end)) {
+  # Routine / Process
+}
+```
+
+**Example 1**: Fibonacci sequence is the sum of the two preceding numbers. We start the sequence from 0 and 1. What are the first 10 Fibonacci numbers? (0 and 1 are the 1st and 2nd Fibonacci number, respectively.)
+
+* Note that we want to get all the 10 Fibonacci numbers. We need to create a vector to store all the 10 numbers. 
+
+    + We already know the first two values. Thus, we replace the first two values in the `fib_vec`. 
+
+```{r}
+fib_vec <- rep(0, 10)
+fib_vec[c(1:2)] <- c(0, 1)
+print(fib_vec)
+```
+
+* The start point and end point are 3 and 10 because we already knew the first two Fibonacci numbers. 
+
+```{r}
+for (i in c(3 : 10)) {
+  fib_vec[i] <- fib_vec[i - 1] + fib_vec[i - 2]
+}
+
+print(fib_vec)
+```
+
+
+**Example 2**: In year 2400, there are 3000 martians in Mars colony. The growth rate of the martian population follows this formula $0.05 P(t) \bigl(1 - \frac{P(t)}{10000})$. What is the population size in year 2500? 
+
+* Note that the growth rate depends on the population size at each year. 
+* You can use for loop to calculate the population size at each year. 
+
+```{r}
+# initialize a vector of population size over the next 100 years
+popsize <- rep(3000, 100)
+
+# Calculate 
+for (t in c(1 : 100)) {
+  popsize[t + 1] <- popsize[t] + 0.05 * popsize[t] * (1 - popsize[t] / 100000)
+}
+
+popdf <- data.frame(year = c(2400:2500), 
+                    popsize = popsize)
+print(popdf[popdf$year == 2500, ])
+```
+
+```{r, echo = FALSE}
+library(ggplot2)
+
+ggplot(popdf, aes(year, popsize)) + 
+  geom_line(color = "dodgerblue", size = 1.5) + 
+  theme_bw()
+```
+
 
 ## If statement
 
+* If statement is used when you just want to execute the chunk of the code if a certain condition is met. 
+* The structure follows 
+
+```{r, eval = FALSE}
+if (condition1) {
+  # Execute some code 
+} else if (condition2) {
+  # Execute some code
+} else {
+  # Execute some code
+}
+```
+
+* `else if` and `else` are not always needed. 
+* Before we jump into examples of if statement, let's take a look at how to write the condition in the `if()`
+
+```{r}
+"yoda" == "windu"
+
+Jedi <- c("yoda", "windu", "kenobi")
+"yoda" %in% Jedi
+```
+
+* If statement only execute the code when the condition in `if()` is true.
+
+```{r}
+Mandalorian <- c("satine", "sabine", "jango")
+
+x <- "yoda"
+
+if (x %in% Jedi) {
+  print("May the force be with you!")
+} else if (x %in% Mandalorian) {
+  print("This is the way!")
+} else {
+  print("Hello, world!")
+}
+```
+
+* Note that R is case sensitive. If you type `"Yoda"`, you get `"Hello, world!"`
+
 ## R function
+
+* As your code grows, copying the entire decision model many times is annoying. 
+* Consider programming some routines / processes in a function if you will reuse the routines / processes many times. 
+* There are many example functions in `R`, e.g., `lm()`, `sum()`, `print()`, etc. 
+* The primary components of an `R` function are the `body()`, `formals()`, and `environment()`. We often want to return the results from the function. 
+
+    + `body()`: the code inside the function. 
+    + `formals()`: the input arguments. 
+    + `environment()`: where the variables in the function are located. 
+    + `return()`: return the relevant output
+    
+
+```{r}
+speak <- function(x) {
+  Jedi <- c("yoda", "windu", "kenobi")
+  Mandalorian <- c("satine", "sabine", "jango")
+  
+  membership <- "Not Jedi or Mandalorian"
+  if (x %in% Jedi) {
+    say <- "May the force be with you!"
+    membership <- "Jedi"
+  } else if (x %in% Mandalorian) {
+    say <- "This is the way!"
+    membership <- "Mandalorian"
+  } else {
+    say <- "Hello, world!"
+  }
+  return(list(say = say, membership = membership))
+}
+
+formals(speak)
+body(speak)
+environment(speak)
+```
+
+* What is the result return from the function? 
+
+```{r}
+speak("jango")
+```
+
+* In this class, we might ask you to change some part of the code in a markov model function. 
+
+**Question**: How would you program the Matian population growth in a function? What are the input arguments? What are the results return from the function? 
 
 ## Plots
 
+```{r, echo = FALSE}
+library(kableExtra)
+```
+
+`r text_spec("Need discussion! Should we introduce base plot or ggplot2?", background = "#D05A6E", color = "white", bold = T)`
+
 ## Useful packages in the class 
 
-## Project management
+* The packages that we will use in the class include: `ggplot2`, `dampack`, and `CEAutil`. 
+* Here are the code to install these packages. 
 
+```{r message = FALSE, warning = FALSE}
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(devtools)) install.packages("devtools")
+if(!require(remotes)) install.packages("remotes")
+if(!require(dampack)) remotes::install_github("DARTH-git/dampack", dependencies = TRUE)
+if(!require(CEAutil)) remotes::install_github("syzoekao/CEAutil", dependencies = TRUE)
+```
 
 
 # Decision tree
