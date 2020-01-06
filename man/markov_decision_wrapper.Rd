@@ -7,7 +7,7 @@
 markov_decision_wrapper(
   vary_param_ls = NULL,
   other_input_ls = NULL,
-  FUN,
+  userfun,
   strategy_set
 )
 }
@@ -19,7 +19,7 @@ should be 1. For example, `list(par1 = 0.2, par2 = 0.3, par3 = 0.2)`.}
 \item{other_input_ls}{The argument is a named list. This argument takes parameters or data that do not
 change in deterministic or probablistic sensitivity analysis.}
 
-\item{FUN}{This is a user defined markov model function. See the example function `markov_model()`.}
+\item{userfun}{This is a user defined markov model function. See the example function `markov_model()`.}
 
 \item{strategy_set}{The set of strategies that are embedded in the `markov_model()`.}
 }
