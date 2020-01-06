@@ -1,3 +1,12 @@
+#' @title Generate code of `gen_psa_samp()` in `dampack`
+#'
+#' @description This function will generate R code to run `gen_psa_samp()` in `dampack`
+#'
+#' @param param_table a `data.frame` including information of the parameter names, the distribution,
+#'        and the required parameters for the distributions.
+#' @param n_samp number of samples for `gen_psa_samp()`
+#'
+#' @return The function returns the `R` code for `gen_psa_samp()`.
 #'
 #' @export
 gen_psa_samp_code <- function(param_table, n_samp = 100) {
@@ -31,7 +40,6 @@ gen_psa_samp_code <- function(param_table, n_samp = 100) {
 }
 
 #'
-#' @export
 match_param_col_val <- function(row_i) {
   dist_i <- row_i$dist
 
@@ -94,7 +102,6 @@ match_param_col_val <- function(row_i) {
 }
 
 #'
-#' @export
 extract_value <- function(match_col, row_ii, dist_i) {
   if (dist_i != "dirichlet") {
     lapply(match_col,

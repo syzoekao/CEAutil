@@ -213,7 +213,6 @@ server <- function(input, output, session) {
         gen_psa_samp_code(values$df, n_samp = input$nsamp)
     }
   })
-
 }
 
 shinyApp(ui, server)

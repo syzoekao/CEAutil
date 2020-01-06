@@ -2,10 +2,8 @@
 
 export(dectree_convert)
 export(dectree_wrapper)
-export(extract_value)
 export(gen_psa_samp_code)
 export(markov_decision_wrapper)
 export(markov_model)
-export(match_param_col_val)
 export(parse_amua_tree)
 import(dplyr)
