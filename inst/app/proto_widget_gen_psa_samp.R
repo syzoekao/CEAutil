@@ -23,10 +23,10 @@ gen_psa_samp_code(df, n_samp = 100)
 
 
 library(dampack)
-l_params_all <- gen_psa_samp(params = c("par1", "par2", "par3"),
-                             dists = c("log-normal", "truncated-normal", "gamma"),
-                             parameterization_types = c("mean, sd", "mean, sd, ll, ul", "shape, scale"),
-                             dists_params = list(c(4, 2), c(2, 1, 0, NA), c(2, 1)),
+l_params_all <- gen_psa_samp(params = c("par2", "par3", "par4", "par4"),
+                             dists = c("beta", "gamma", "log-normal", "truncated-normal"),
+                             parameterization_types = c("a, b", "mean, sd", "meanlog, sdlog", "mean, sd, ll, ul"),
+                             dists_params = list(c(3, 2), c(3, 4), c(1.3, 1), c(5, 2, 1, NA)),
                              nsamp = 100)
 
 

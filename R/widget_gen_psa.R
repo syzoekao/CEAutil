@@ -39,7 +39,7 @@ gen_psa_samp_code <- function(param_table, n_samp = 100) {
   cat(gen_code)
 }
 
-#'
+#' @keywords internal
 match_param_col_val <- function(row_i) {
   dist_i <- row_i$dist
 
@@ -101,7 +101,7 @@ match_param_col_val <- function(row_i) {
   return(list(par_i = par_i, dist_i = dist_i, type_i = out_col, val_i = out_val))
 }
 
-#'
+#' @keywords internal
 extract_value <- function(match_col, row_ii, dist_i) {
   if (dist_i != "dirichlet") {
     lapply(match_col,
