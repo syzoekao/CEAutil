@@ -503,11 +503,15 @@ Follow the instruction [here](https://github.com/zward/Amua/wiki/Getting-Started
 
 ### Decision, chance, terminal nodes, and decision tree
 
+* Amua includes three type of nodes: decision, chance and terminal nodes in a decision tree. 
+
 <video width="600" height="400" controls>
   <source src="Figure/Amua_basics1.mp4" type="video/mp4">
 </video>
 
 ### Parameterization
+
+* While you can hard code all the parameter values in each branch or terminal node, you could parameterize the input parameters (especially the parameters that might vary). 
 
 <video width="600" height="400" controls>
   <source src="Figure/Amua_basics2.mp4" type="video/mp4">
@@ -516,11 +520,18 @@ Follow the instruction [here](https://github.com/zward/Amua/wiki/Getting-Started
 
 ### Adding more outcomes
 
+* You could add multiple outcomes of interest at the terminal nodes. 
+* Sometimes we might be interested not only in cost but also in epidemiological outcomes
+
 <video width="600" height="400" controls>
   <source src="Figure/Amua_basics3.mp4" type="video/mp4">
 </video>
 
 ### Change analysis
+
+* Change your analysis type to cost-effectiveness analysis. 
+* Remember to select the cost and effectiveness outcomes. 
+* Also select the baseline strategy. 
 
 <video width="600" height="400" controls>
   <source src="Figure/Amua_basics4.mp4" type="video/mp4">
@@ -528,13 +539,15 @@ Follow the instruction [here](https://github.com/zward/Amua/wiki/Getting-Started
 
 ### Save the model and export the tree to R code
 
+* We then save the model and export the tree structure to R code. 
+* Notice that Amua created a folder, called `temp_Export/`. 
+* In this folder, there are two `.R` files: `main.R` and `functions.R`. 
+* The body of the decision tree model is in `main.R`. 
+
 <video width="600" height="400" controls>
   <source src="Figure/Amua_basics5.mp4" type="video/mp4">
 </video>
 
-* Notice that Amua created a folder, called `temp_Export/`. 
-* In this folder, there are two `.R` files: `main.R` and `functions.R`. 
-* The body of the decision tree model is in `main.R`. 
 
 ## Example
 
