@@ -1,0 +1,605 @@
+---
+title: "Introduction to R for cost-effectiveness analysis"
+author: "Eva Enns & Zoe Kao"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+description: "Introduction to R for cost-effectiveness analysis"
+---
+
+# R Basics
+
+This lecture is to introduce the elements in R programming language that are relevant to decision model and decision analysis. 
+
+## Agenda 
+
+* Install R and RStudio
+* Data type
+* Data input and output
+* For loop
+* If statement
+* R function
+* Plots 
+* Useful packages in the class 
+* Project management
+
+## Install R and RStudio
+
+* You could install R [here](https://repo.miserver.it.umich.edu/cran/). 
+  + Be aware of your operating system
+  
+* The original R interface is not user-friendly. We recommend using the RStudio IDE [here](https://rstudio.com/products/rstudio/download/) 
+
+    + Just download the free version!
+  
+* Open RStudio 
+![](Figure/RStudioIDE.png)
+
+## Data type 
+
+* In this class, we will mainly use `vector`, `matrix`, `array`, `list`, and `data.frame`. 
+* These types of data are used intensively in constructing Markov model and in the package of decision analyses
+
+### Vector 
+
+```{r}
+x1 <- c(3, 1, 4)
+print(x1)
+
+x2 <- c(2, 7, 1)
+print(x1 + x2)
+
+future_human <- c("earther", "martian", "belter")
+print(future_human)
+```
+
+* You could combine different type of vectors
+    
+    + This operation coerces the data type into text
+
+```{r}
+x1_and_future_human <- c(x1, future_human)
+print(x1_and_future_human)
+```
+
+* We often create the initial status in the Markov model using vector
+  
+    + The distribution of healthy, sick, and dead in a population 
+    + You can name the elements in the vector
+
+```{r}
+v_init <- c(0.9, 0.09, 0.01)
+names(v_init) <- c("healthy", "sick", "dead")
+print(v_init)
+print(sum(v_init))
+```
+
+* Access an element(s) in a vector 
+
+```{r}
+print(v_init[2])
+print(v_init["sick"])
+
+print(v_init[2:3])
+print(v_init[c("sick", "dead")])
+```
+
+### Matrix & Array
+
+* Matrix is defined with two dimension using the numbers of columns and rows
+
+```{r}
+x <- matrix(c(1, 0, 0, 
+              0.8, 0.2, 0, 
+              0, 0, 1), 
+            byrow = T, nrow = 3)
+print(x)
+```
+
+* We often use this as the basis of transition matrix in Markov model or use this to trace the outcomes over time. 
+* You could also provide the names to the columns and rows
+
+```{r}
+rownames(x) <- colnames(x) <- c("healthy", "sick", "dead")
+print(x)
+```
+
+* We can access the value of a specific cell
+
+```{r}
+print(x[2, 2])
+print(x["sick", "sick"])
+```
+
+* Matrix multiplication is often used in Markov models. For example, we can multiply the initial state with the transition matrix
+ 
+    + `v_init` is not a matrix. Thus, we use `t()` to convert `v_init` into a $1 \times 3$ matrix. 
+    + `%*%` is the symbol for matrix multiplication in `R`
+
+```{r}
+print(t(v_init) %*% x)
+```
+
+* If transition probabilities in the transition matrix vary with time, `array()` is more useful. 
+* `array()` can be seen as a data type that stores multiple matrices all at once. 
+* Let's create two transition matrices and combine them into an array. 
+
+```{r}
+tr1 <- x
+tr2 <- matrix(c(0.9, 0.1, 0, 
+                0.7, 0.2, 0.1, 
+                0, 0, 1), 
+              byrow = T, nrow = 3, 
+              dimnames = list(c("healthy", "sick", "dead"), 
+                              c("healthy", "sick", "dead")))
+```
+
+* Create an array with dimension $3 \times 3 \times 2$
+
+```{r}
+tr_array <- array(dim = c(3, 3, 2), 
+                  data = cbind(tr1, tr2), 
+                  dimnames = list(c("healthy", "sick", "dead"), 
+                              c("healthy", "sick", "dead"), 
+                              c(1, 2)))
+print(tr_array)
+```
+
+* We can access each transition matrix by proper indexing 
+
+```{r}
+print(tr_array[ , ,  1])
+print(tr_array[ , ,  2])
+```
+
+* We can also access a specific value of the transition array
+
+```{r}
+print(tr_array[1, 2, 1])
+```
+
+* Similarly, we can perform calculation using a slice of array
+
+```{r}
+v_time2 <- t(v_init) %*% tr_array[ , , 1]
+print(v_time2)
+
+v_time3 <- v_time2 %*% tr_array[ , , 2]
+print(v_time3)
+```
+
+### List 
+
+* List can combine different types of data without affecting the data type. 
+
+```{r}
+temp_ls <- list(future_human = future_human, v_init = v_init, tr_array = tr_array)
+print(temp_ls)
+```
+
+* There are two approaches to access an element in the list 
+
+```{r}
+print(temp_ls[[1]])
+print(temp_ls$v_init)
+```
+
+* You can access a specific element in an element of a list
+
+```{r}
+print(temp_ls$tr_array[, , 1])
+```
+
+### `data.frame`
+
+* If your Stats or Biostats classes use `R`, you probably have encountered `data.frame()` very frequently.
+* Let's create a `data.frame()`
+
+```{r}
+profile <- data.frame(name = c("Amos", "Bobbie", "Naomi"), 
+                      human_type = c("earther", "martian", "belter"), 
+                      height = c(1.8, 2.1, 1.78))
+print(profile)
+```
+
+* `data.frame()` is essentially a named list of vectors with the same length. 
+
+```{r}
+typeof(profile)
+length(profile$name) 
+length(profile$human_type)
+length(profile$height)
+```
+
+* Access elements in `data.frame()`
+
+```{r}
+profile[profile$name == "Bobbie", ]
+profile[profile$name == "Bobbie", "height"]
+```
+
+## Data input and output
+
+* You could load/read or save/write your own datasets. 
+* R data format family:
+
+  * `.RData`, `.rda`, and `.rds`. 
+  * You can retrieve the information in these data objects using functions `load()` and `readRDS()`
+  * You can save the data using `save()` and `saveRDS()`. 
+  
+* It is common that you might encounter other data types (e.g., `.csv` and `.txt`) or even data format for other software (e.g., Stata and SAS). 
+
+  * To read or save other types of data, you could find the information [here](https://bookdown.org/lyzhang10/lzhang_r_tips_book/how-to-read-data-into-r.html) and [here](https://mgimond.github.io/ES218/Week02b.html). 
+
+## Loops 
+
+* Loops help repeat routine or calculations. 
+* Let's watch a video from Codecademy. 
+
+```{r echo = FALSE, message = FALSE, warning = FALSE}
+# library("htmltools")
+library("vembedr")
+
+embed_url("https://www.youtube.com/watch?v=wxds6MAtUQ0")
+```
+
+* Components included in loops 
+
+    + A well-defined routine/process
+    + When to start
+    + When to stop 
+
+* The most used loop is `for` loop in many decision models. The structure follows: 
+
+```{r, eval = FALSE}
+for (i in c(start : end)) {
+  # Routine / Process
+}
+```
+
+**Example 1**: Fibonacci sequence is the sum of the two preceding numbers. We start the sequence from 0 and 1. What are the first 10 Fibonacci numbers? (0 and 1 are the 1st and 2nd Fibonacci number, respectively.)
+
+* Note that we want to get all the 10 Fibonacci numbers. We need to create a vector to store all the 10 numbers. 
+
+    + We already know the first two values. Thus, we replace the first two values in the `fib_vec`. 
+
+```{r}
+fib_vec <- rep(0, 10)
+fib_vec[c(1:2)] <- c(0, 1)
+print(fib_vec)
+```
+
+* The start point and end point are 3 and 10 because we already knew the first two Fibonacci numbers. 
+
+```{r}
+for (i in c(3 : 10)) {
+  fib_vec[i] <- fib_vec[i - 1] + fib_vec[i - 2]
+}
+
+print(fib_vec)
+```
+
+
+**Example 2**: In year 2400, there are 3000 martians in Mars colony. The growth rate of the martian population follows this formula $0.05 P(t) \bigl(1 - \frac{P(t)}{10000})$. What is the population size in year 2500? 
+
+* Note that the growth rate depends on the population size at each year. 
+* You can use for loop to calculate the population size at each year. 
+
+```{r}
+# initialize a vector of population size over the next 100 years
+popsize <- rep(3000, 100)
+
+# Calculate 
+for (t in c(1 : 100)) {
+  popsize[t + 1] <- popsize[t] + 0.05 * popsize[t] * (1 - popsize[t] / 100000)
+}
+
+popdf <- data.frame(year = c(2400:2500), 
+                    popsize = popsize)
+print(popdf[popdf$year == 2500, ])
+```
+
+
+
+```{r, echo = FALSE}
+library(ggplot2)
+
+ggplot(popdf, aes(year, popsize)) + 
+  geom_line(color = "dodgerblue", size = 1.5) + 
+  theme_bw()
+```
+
+
+## If statement
+
+* If statement is used when you just want to execute the chunk of the code if a certain condition is met. 
+* The structure follows 
+
+```{r, eval = FALSE}
+if (condition1) {
+  # Execute some code 
+} else if (condition2) {
+  # Execute some code
+} else {
+  # Execute some code
+}
+```
+
+* `else if` and `else` are not always needed. 
+* Before we jump into examples of if statement, let's take a look at how to write the condition in the `if()`
+
+```{r}
+"yoda" == "windu"
+
+Jedi <- c("yoda", "windu", "kenobi")
+"yoda" %in% Jedi
+```
+
+* If statement only execute the code when the condition in `if()` is true.
+
+```{r}
+Mandalorian <- c("satine", "sabine", "jango")
+
+x <- "yoda"
+
+if (x %in% Jedi) {
+  print("May the force be with you!")
+} else if (x %in% Mandalorian) {
+  print("This is the way!")
+} else {
+  print("Hello, world!")
+}
+```
+
+* Note that R is case sensitive. If you type `"Yoda"`, you get `"Hello, world!"`
+
+## R function
+
+* As your code grows, copying the entire decision model many times is annoying. 
+* Consider programming some routines / processes in a function if you will reuse the routines / processes many times. 
+* There are many example functions in `R`, e.g., `lm()`, `sum()`, `print()`, etc. 
+* The primary components of an `R` function are the `body()`, `formals()`, and `environment()`. We often want to return the results from the function. 
+
+    + `body()`: the code inside the function. 
+    + `formals()`: the input arguments. 
+    + `environment()`: where the variables in the function are located. 
+    + `return()`: return the relevant output
+    
+
+```{r}
+speak <- function(x) {
+  Jedi <- c("yoda", "windu", "kenobi")
+  Mandalorian <- c("satine", "sabine", "jango")
+  
+  membership <- "Not Jedi or Mandalorian"
+  if (x %in% Jedi) {
+    say <- "May the force be with you!"
+    membership <- "Jedi"
+  } else if (x %in% Mandalorian) {
+    say <- "This is the way!"
+    membership <- "Mandalorian"
+  } else {
+    say <- "Hello, world!"
+  }
+  return(list(say = say, membership = membership))
+}
+
+formals(speak)
+body(speak)
+environment(speak)
+```
+
+* What is the result return from the function? 
+
+```{r}
+speak("jango")
+```
+
+* In this class, we might ask you to change some part of the code in a markov model function. 
+
+**Question**: How would you program the Matian population growth in a function? What are the input arguments? What are the results return from the function? 
+
+## Plots
+
+#### Histogram
+
+* Showing the distribution of a variable 
+
+```{r}
+x <- rnorm(1000, 0, 1) # draw 1000 samples from a normal distribution
+print(mean(x))
+print(sd(x))
+
+hist(x, freq = F, col = "gray")
+```
+
+#### Scatter plots
+
+* Inspect the correlation between two variables
+
+```{r}
+library(CEAutil)
+data(worldHE)
+
+print(head(worldHE))
+```
+
+* Only focus on the data in 2010
+```{r}
+worldHE2010 <- worldHE[worldHE$Year == 2010, ]
+```
+
+```{r}
+hist(worldHE2010$LEyr, main = "Life expectancy in 2010")
+hist(worldHE2010$HealthExp, main = "Health expenditure in 2010 per capita")
+```
+
+```{r}
+plot(worldHE2010$HealthExp, worldHE2010$LEyr, ylim = c(70, 90), 
+     xlab = "health expenditure", ylab = "life expectancy")
+text(worldHE2010$HealthExp, worldHE2010$LEyr, labels = worldHE2010$Entity, cex = 0.8)
+```
+
+[source](https://ourworldindata.org/the-link-between-life-expectancy-and-health-spending-us-focus)
+
+#### Line plots
+
+* What is the trend of health expenditure in the US 1970-2015?
+
+```{r}
+worldHE_US <- worldHE[worldHE$Entity == "United States" & worldHE$Year >= 1970 & worldHE$Year <= 2015, ]
+# adding lines: UK's expenditure at the same time period
+worldHE_UK <- worldHE[worldHE$Entity == "United Kingdom" & worldHE$Year >= 1970 & worldHE$Year <= 2015, ]
+
+plot(worldHE_US$Year, worldHE_US$HealthExp, type = "l", col = "red", 
+     ylab = "expenditure", xlab = "year", ylim = c(500, 10000))
+lines(worldHE_UK$Year, worldHE_UK$HealthExp, col = "royalblue")
+legend("topleft", legend=c("US", "UK"),
+       col=c("red", "royalblue"), lty = 1, cex = 0.8)
+```
+
+* There is a great package to help you make better plots! `ggplot2`
+
+## Useful packages in the class 
+
+* The packages that we will use in the class include: `ggplot2`, `dampack`, and `CEAutil`. 
+* Here are the code to install these packages. 
+
+```{r message = FALSE, warning = FALSE}
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(devtools)) install.packages("devtools")
+if(!require(remotes)) install.packages("remotes")
+if(!require(dampack)) remotes::install_github("DARTH-git/dampack", dependencies = TRUE)
+if(!require(CEAutil)) remotes::install_github("syzoekao/CEAutil", dependencies = TRUE)
+```
+
+
+
+# Decision tree
+
+## Agenda 
+
+* Introduction of Amua
+* Creating a decision tree using Amua
+* Example
+* Exporting Amua decision tree to R script
+* Prepare the R decision tree from Amua for further analyses
+
+For a simple decision tree, we can draw the tree easily. As the decision tree grows, there is software helping you draw the tree such as TreeAge and Amua. In this class, we use [Amua](https://github.com/zward/Amua) because it is free. We will show how to use Amua to build a decision tree and export the tree to R script for CEA analysis. 
+
+## Install Amua
+
+Follow the instruction [here](https://github.com/zward/Amua/wiki/Getting-Started) to install Amua. Be aware of the difference between Mac and Windows users! After you install Amua, remember where you store the software. 
+
+## Create a decision tree 
+
+### Open the `Amua.jar`. 
+
+![](Figure/Amua_open.png)
+
+### Decision, chance, terminal nodes, and decision tree
+
+<video width="600" height="400" controls>
+  <source src="Figure/Amua_basics1.mp4" type="video/mp4">
+</video>
+
+### Parameterization
+
+<video width="600" height="400" controls>
+  <source src="Figure/Amua_basics2.mp4" type="video/mp4">
+</video>
+
+
+### Adding more outcomes
+
+<video width="600" height="400" controls>
+  <source src="Figure/Amua_basics3.mp4" type="video/mp4">
+</video>
+
+### Change analysis
+
+<video width="600" height="400" controls>
+  <source src="Figure/Amua_basics4.mp4" type="video/mp4">
+</video>
+
+### Save the model and export the tree to R code
+
+<video width="600" height="400" controls>
+  <source src="Figure/Amua_basics5.mp4" type="video/mp4">
+</video>
+
+* Notice that Amua created a folder, called `temp_Export/`. 
+* In this folder, there are two `.R` files: `main.R` and `functions.R`. 
+* The body of the decision tree model is in `main.R`. 
+
+## Example
+
+Dracula is preparing for a spring break party tonight. But there’s one final decision that Dracula is struggling with. Being a vampire, he intends to bite and suck the blood of some of his guests at the party (about 25% of them, by his best estimate). While being bitten by a vampire won’t turn his guests into vampires or zombies, like some horror movies might suggest, there is a 50% chance that a vampire bite results in a rather severe bacterial infection, of which 66% of cases require hospitalization for an average of 1 night.
+
+Being a gracious host, Dracula is considering different ways of administering antibiotic prophylaxis to his guests to reduce their risk of infection. One option is to administer the antibiotics to his victim‐guests just before he bites them – this would reduce the risk of a vampire bite infection by 20%. However, the antibiotics can be even more effective, reducing the risk of infection by 90%, if administered at least 30 minutes before being bitten. To achieve this, Dracula is considering putting the antibiotics into the drinks served at the party to ensure that his guests are all properly dosed before he bites his victims. But this means that all his guests would be exposed to the antibiotics (not just those he intends to bite), and he knows that about 5% of people are severely allergic to these antibiotics and would require immediate hospitalization if exposed. Dracula is therefore also considering not administering antibiotic prophylaxis at all to avoid this harm.
+
+However, all the healthy blood doesn't come without cost. This party will cost Dracula \$1000 for a total of 200 guests (an average of \$5 per guest). In addition, Dracula expects the cost of antibiotic to be \$10 for each guest he bites. If Dracula decides to administer the antibiotics in all the drinks served at the party, the total cost of antibioitics is expected to be $100 (Dracula gets discount for buying a large batch of antibiotics!). Also, Dracula is willing to pay for the cost of hospitalization for any guest who experience bacteiral infection due to his bites because he feels responsible. The cost of hospitalization per person per night is \$500. Dracula expects to get an average of 470 mL healthy blood by biting a guest. However, if the guest ends up hospitalized due to bacterial infection, the healthy blood that Dracula can get is reduced by 10%. 
+
+Dracula hopes you can help him determine which strategy he should choose.
+
+You can build a decision tree via Amua. 
+
+## Wrapper function for decision tree exported from Amua
+
+* The decision tree created in Amua can be exported to R. 
+* However, the R script created by Amua is not easy to use for advance CEA analysis (e.g., PSA, one/two-way sensitivity analysis, EVPI, etc.). 
+* We created some wrapper functions to reshape the R script from Amua. This transformation of code allows us to do further analysis using other packages in R. 
+* Install the package using the following code. 
+
+```{r message = FALSE, warnings = FALSE}
+
+if(!require("remotes")) install.packages("remotes")
+if(!require("CEAutil")) remotes::install_github("syzoekao/CEAutil", dependencies = TRUE)
+
+library(CEAutil)
+```
+
+* We will use two functions from the package to convert the R script exported from Amua. 
+
+  1. `parse_amua_tree()`: 
+
+This function only takes an input argument, the path to the `main.R` file of the Amua decision model. The function returns a list of outputs. Output 1 `param_ls` is a list of input parameters with basecase values used in Amua. Output 2 `treefunc` is the R code of the Amua decision model formatted as text. 
+
+
+```{r class.source = 'fold-show'}
+treetxt <- parse_amua_tree("AmuaExample/DraculaParty_Export/main.R")
+
+print(treetxt$param_ls)
+```
+
+
+  2. `dectree_wrapper()`: 
+
+We use the two outputs from the `parse_amua_tree()` as the input arguments in the `dectree_wrapper()`. The input arguments in the wrapper function include `params_basecase`, `treefunc`, and `popsize`. `params_basecase` takes a list of named input parameters. `treefunc` takes the text file organized by the `parse_amua_tree()`. `popsize` is defaulted as 1 but you could change your population size. 
+
+```{r class.source = 'fold-show'}
+param_ls <- treetxt[["param_ls"]]
+treefunc <- treetxt[["treefunc"]]
+
+tree_output <- dectree_wrapper(params_basecase = param_ls, treefunc = treefunc, popsize = 200)
+```
+
+* The cost and effectiveness of each of Dracula's strategy based on the basecase values
+
+```{r}
+print(tree_output)
+```
+
+## Change parameter values
+
+* Many of the parameters are organized as a variable in the decision tree. We can easily see how the cost and effectiveness vary with changes of parameters of interest.
+
+**Example 1.** Dracula has been starved over the long cruel winter in Minnesota. The Spring break is the first time that his guests are willing to come to his party in several months. Therefore, Dracula is going to seize the chance to bite as many guests as possible. The probability that he bites a guest is now increased to 50%. What are the cost and effectiveness of each strategy? 
+
+
+**Example 2.** The cost of hospitalization due to bacterial infection varies from guest to guest depending on the healthcare that a guest has. Overall, the cost of hospitalization has a mean of \$500 with a standard deviation \$300 following a gamma distribution. What are the mean cost and effectiveness of the party across all 200 guests? 
+

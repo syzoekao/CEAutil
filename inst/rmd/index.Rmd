@@ -2,14 +2,20 @@
 title: "Introduction to R"
 author: "Eva Enns & Zoe Kao"
 date: "`r Sys.Date()`"
-output:
-  html_document:
-    number_sections: yes
-    toc: yes
-    toc_depth: 3
-    toc_float: yes
+# output:
+#   html_document:
+#     number_sections: yes
+#     toc: yes
+#     toc_depth: 3
+#     toc_float: yes
+output: learnr::tutorial
+runtime: shiny_prerendered
 description: Introduction to R for cost-effectiveness analysis
 ---
+
+```{r setup, include=FALSE}
+library(learnr)
+```
 
 # R Basics
 
@@ -224,7 +230,9 @@ profile[profile$name == "Bobbie", "height"]
 
 ## Data input and output
 
-* If you have external datasets, you could load or read in the datasets. 
+* If you have external datasets, you could load/read or save/write the datasets. 
+* Some common functions include `load()` and `readRDS()` for generic `R` data types (e.g., `.RData`, `.rda`, and `.rds`). 
+
 * The data extension of the external datasets could be `.RData`, `.rda`, `.rds`, `.csv`, `.txt`, etc. There are multiple ways to load, read, save, or write different types of data. You could find the information [here](https://bookdown.org/lyzhang10/lzhang_r_tips_book/how-to-read-data-into-r.html) and [here](https://mgimond.github.io/ES218/Week02b.html). 
 
 ## Loops 
