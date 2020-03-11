@@ -584,8 +584,6 @@ This function only takes an input argument, the path to the `main.R` file of the
 
 ```{r class.source = 'fold-show'}
 treetxt <- parse_amua_tree("AmuaExample/DraculaParty_Export/main.R")
-
-print(treetxt$param_ls)
 ```
 
 
@@ -596,15 +594,9 @@ We use the two outputs from the `parse_amua_tree()` as the input arguments in th
 ```{r class.source = 'fold-show'}
 param_ls <- treetxt[["param_ls"]]
 treefunc <- treetxt[["treefunc"]]
-
-tree_output <- dectree_wrapper(params_basecase = param_ls, treefunc = treefunc, popsize = 200)
 ```
 
 * The cost and effectiveness of each of Dracula's strategy based on the basecase values
-
-```{r}
-print(tree_output)
-```
 
 ## Change parameter values
 
