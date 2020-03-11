@@ -222,6 +222,29 @@ profile[profile$name == "Bobbie", ]
 profile[profile$name == "Bobbie", "height"]
 ```
 
+## Path to your working directory
+
+* It is recommended to create a folder/directory for each of your project. 
+* You would store all your R script, data, and outputs in the directory. 
+* Whenever you are working on a project, set up your working directory first. 
+
+```{r, eval=FALSE}
+setwd("path-to-your-project-folder")
+setwd("zoeslaptop/Documents/CEA/introR/")
+```
+
+  * The `setwd()` function sets up your working directory and allows you to access the files and folders in the working directory much easier. 
+  * For example, I want to run the R script `hello.R` in the `Rscript/` folder in your working directory. 
+    
+    * Without setting up the working directory first, I have to type `source("zoeslaptop/Documents/CEA/introR/Rscript/hello.R")`
+    * If setting up the working directory first, I can run the script by this command: `source("Rscript/hello.R")`
+    
+  * The format of path could be slightly different between windows, unix, and linux
+
+* RStudio provides a very nice feature `project`. A project sets up the working environment automatically. Whenever you open a project, you are in the working directory to a specific project alreadly!
+
+  * You could find more information about creating an R project and other useful tip [here](https://zerotorhero.files.wordpress.com/2012/12/data-and-projects-in-r-studio.pdf). 
+
 ## Data input and output
 
 * You could load/read or save/write your own datasets. 
@@ -556,13 +579,27 @@ Dracula is preparing for a spring break party tonight. But there’s one final d
 Being a gracious host, Dracula is considering different ways of administering antibiotic prophylaxis to his guests to reduce their risk of infection. One option is to administer the antibiotics to his victim‐guests just before he bites them – this would reduce the risk of a vampire bite infection by 20%. However, the antibiotics can be even more effective, reducing the risk of infection by 90%, if administered at least 30 minutes before being bitten. To achieve this, Dracula is considering putting the antibiotics into the drinks served at the party to ensure that his guests are all properly dosed before he bites his victims. But this means that all his guests would be exposed to the antibiotics (not just those he intends to bite), and he knows that about 5% of people are severely allergic to these antibiotics and would require immediate hospitalization if exposed. Dracula is therefore also considering not administering antibiotic prophylaxis at all to avoid this harm.
 
 However, all the healthy blood doesn't come without cost. This party will cost Dracula \$1000 for a total of 200 guests (an average of \$5 per guest). In addition, Dracula expects the cost of antibiotic to be \$10 for each guest he bites. If Dracula decides to administer the antibiotics in all the drinks served at the party, the total cost of antibioitics is expected to be $100 (Dracula gets discount for buying a large batch of antibiotics!). Also, Dracula is willing to pay for the cost of hospitalization for any guest who experience bacteiral infection due to his bites because he feels responsible. The cost of hospitalization per person per night is \$500. Dracula expects to get an average of 470 mL healthy blood by biting a guest. However, if the guest ends up hospitalized due to bacterial infection, the healthy blood that Dracula can get is reduced by 10%. 
+Dracula hopes that you can help him determine which strategy he should choose.
 
-Dracula hopes you can help him determine which strategy he should choose.
+Think about the following quesitons: 
+
+1. List out Dracula's strategies. 
+2. What are the potential outcomes for Dracula's party? 
+3. Draw the decision tree for Dracula's party. 
 
 You can build a decision tree via Amua. 
 
+* The tree structure
+
 ![](Figure/DraculaTree.png)
 
+* The parameters
+
+![](Figure/DraculaTreeParameterTable.png){width=250px}
+
+* The CEA outcomes
+
+![](Figure/DraculaTreeCEA.png)
 
 ## Wrapper function for decision tree exported from Amua
 
@@ -574,7 +611,9 @@ You can build a decision tree via Amua.
 ```{r message = FALSE, warnings = FALSE}
 
 if(!require("remotes")) install.packages("remotes")
+if(!require("dplyr")) install.packages("dplyr")
 if(!require("CEAutil")) remotes::install_github("syzoekao/CEAutil", dependencies = TRUE)
+if(!require(dampack)) remotes::install_github("DARTH-git/dampack", dependencies = TRUE)
 
 library(CEAutil)
 ```
@@ -600,15 +639,38 @@ We use the two outputs from the `parse_amua_tree()` as the input arguments in th
 ```{r class.source = 'fold-show'}
 param_ls <- treetxt[["param_ls"]]
 treefunc <- treetxt[["treefunc"]]
-
-tree_output <- dectree_wrapper(params_basecase = param_ls, treefunc = treefunc, popsize = 200)
 ```
 
-* The cost and effectiveness of each of Dracula's strategy based on the basecase values
+* Expected cost per person
 
 ```{r}
+tree_output <- dectree_wrapper(params_basecase = param_ls, treefunc = treefunc, popsize = 1)
 print(tree_output)
 ```
+
+* Expected cost of 200 guests
+
+```{r}
+tree_output <- dectree_wrapper(params_basecase = param_ls, treefunc = treefunc, popsize = 200)
+print(tree_output)
+```
+
+## Calculate ICERs 
+
+```{r}
+library(dampack)
+dracula_icer <- calculate_icers(tree_output$Cost,
+                                tree_output$expectedBlood,
+                                tree_output$strategy)
+print(dracula_icer)
+```
+
+* Create an ICER plot
+
+```{r}
+plot(dracula_icer, effect_units = "mL")
+```
+
 
 ## Change parameter values
 
@@ -624,48 +686,71 @@ tree_output <- dectree_wrapper(params_basecase = param_ls, treefunc = treefunc, 
 print(tree_output)
 ```
 
+* ICER & ICER plot
+
+```{r}
+dracula_icer <- calculate_icers(tree_output$Cost,
+                                tree_output$expectedBlood,
+                                tree_output$strategy)
+print(dracula_icer)
+plot(dracula_icer, effect_units = "mL")
+```
+
 
 **Example 2.** The cost of hospitalization due to bacterial infection varies from guest to guest depending on the healthcare that a guest has. Overall, the cost of hospitalization has a mean of \$500 with a standard deviation \$300 following a gamma distribution. What are the mean cost and effectiveness of the party across all 200 guests? 
 
-```{r message = FALSE, warning = FALSE}
-if(!require(dampack)) remotes::install_github("DARTH-git/dampack", dependencies = TRUE)
+* Generate 200 samples of the cost of hospitalization from gamma distribution
 
+```{r message = FALSE, warning = FALSE}
 require(dampack)
 
-C_hospital <- gen_psa_samp(params = c("C_hospital"), 
-                           dists = c("gamma"), 
-                           parameterization_types = c("mean, sd"), 
-                           dists_params = list(c(500, 250)), 
+C_hospital <- gen_psa_samp(params = c("C_hospital"),
+                           dists = c("gamma"),
+                           parameterization_types = c("mean, sd"),
+                           dists_params = list(c(500, 250)),
                            nsamp = 200)
 
 cat("mean and sd are", c(mean(C_hospital$C_hospital), sd(C_hospital$C_hospital)), ", respectively.")
 
-hist(C_hospital$C_hospital, main = "histogram", xlab = "values", ylab = "frequency")
-
-tree_vary <- dectree_wrapper(params_basecase = param_ls, 
-                       treefunc = treefunc, 
-                       popsize = 1, 
-                       vary_param_samp = C_hospital)
+hist(C_hospital$C_hospital, main = "histogram", xlab = "values", ylab = "frequency", col = "gray", border = F)
+abline(v = mean(C_hospital$C_hospital), col = "firebrick", lwd = 3)
+text(mean(C_hospital$C_hospital) + 50, 30, "mean\ncost", col = "firebrick", font = 2)
 ```
 
-* The elements in the tree_vary output
+* Calculate the expected cost and effectiveness for each sample of cost 
 
 ```{r}
-print(names(tree_vary))
+tree_vary <- dectree_wrapper(params_basecase = param_ls, 
+                             treefunc = treefunc, 
+                             vary_param_samp = C_hospital)
 ```
 
 * Let's take a look at some elements in the tree_vary output
 
 ```{r}
+print(names(tree_vary))
 print(head(tree_vary$param_samp))
-print(head(tree_vary$expectedEff1))
-print(head(tree_vary$expectedCost))
+print(head(tree_vary$expectedBlood))
+print(head(tree_vary$Cost))
 ```
 
 * The mean cost 
 
 ```{r}
-print(summary(tree_vary$expectedCost))
+print(summary(tree_vary$Cost))
+```
+
+* How the expected cost differs between strategy? 
+
+```{r}
+hist(tree_vary$Cost$Donothing, col = rgb(0.5, 0.5, 0.5, 0.6), border = F,
+     main = c("Cost of hospitalization"),
+     xlab = "Cost")
+hist(tree_vary$Cost$Targetedantibiotics, col = rgb(0.2, 0.2, 0.8, 0.5), border = F, add = T)
+hist(tree_vary$Cost$Universalantibiotics, col = rgb(0.3, 0.8, 0.2, 0.5), border = F, add = T)
+legend("topright", c("do nothing", "targeted", "universal"),
+       col = c(rgb(0.5, 0.5, 0.5, 0.6), rgb(0.2, 0.2, 0.8, 0.5), rgb(0.3, 0.8, 0.2, 0.5)),
+       pch = 15, pt.cex = 2)
 ```
 
 # Markov model
@@ -1135,7 +1220,7 @@ print(head(owsa_out$owsa_Cost))
 * We can see how each parameter affects the cost and effectiveness. 
 
 ```{r}
-plot(owsa_out$owsa_expectedEff1)
+plot(owsa_out$owsa_expectedBlood)
 plot(owsa_out$owsa_Cost)
 ```
 
@@ -1165,7 +1250,7 @@ params_range <- data.frame(pars = c("p_bite", "C_drug"),
 twsa_out <- run_twsa_det(params_range, param_ls, nsamp = 10, 
                          dectree_wrapper, 
                          treefunc = treefunc, popsize = 200)
-plot(twsa_out$twsa_expectedEff1)
+plot(twsa_out$twsa_expectedBlood)
 plot(twsa_out$twsa_Cost)
 ```
 

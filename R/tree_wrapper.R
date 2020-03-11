@@ -19,8 +19,10 @@ parse_amua_tree <- function(path_to_txt) {
 
   ix_param <- which(txt %in% c("### Define parameters"))
   ix_param <- c(ix_param, ix_palm[which(ix_palm == ix_param) + 1])
-  ix_param <- c(ix_param[1] : (ix_param[2] - 1))
+  ix_param <- c(ix_param[1] : ix_param[2])
   param_chunk <- txt[ix_param[-c(1, length(ix_param))]]
+  tmp_nchar <- unlist(lapply(c(1:length(param_chunk)), function(x) nchar(param_chunk[[x]])))
+  param_chunk <- param_chunk[which(tmp_nchar > 0)]
 
   param_chunk <- gsub(" ", "", param_chunk)
   param_chunk <- gsub("<-", " ", param_chunk)
@@ -85,7 +87,8 @@ dectree_convert <- function(params_basecase, treefunc, popsize = 1) {
   output <- data.frame(output)
   output <- output %>%
     mutate_at(vars(starts_with("expected")), ~as.numeric(as.character(.)) * popsize) %>%
-    rename_at(vars(contains("Cost")), funs(gsub("expected", "", .)))
+    rename_at(vars(contains("Cost")), funs(gsub("expected", "", .))) %>%
+    rename(strategy = name)
   return(output)
 }
 
@@ -145,7 +148,7 @@ dectree_wrapper <- function(params_basecase, treefunc, popsize = 1, vary_param_s
     })
     n_outcomes <- ncol(sim_out[[1]]) - 1
     outcome_name <- colnames(sim_out[[1]])[-1]
-    strategy_name <- as.character(tree_output$name)
+    strategy_name <- as.character(tree_output$strategy)
     tree_out <- vector(mode = "list", n_outcomes)
     names(tree_out) <- outcome_name
     for (i in c(1:n_outcomes)) {

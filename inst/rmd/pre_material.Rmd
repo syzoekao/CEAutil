@@ -222,6 +222,29 @@ profile[profile$name == "Bobbie", ]
 profile[profile$name == "Bobbie", "height"]
 ```
 
+## Path to your working directory
+
+* It is recommended to create a folder/directory for each of your project. 
+* You would store all your R script, data, and outputs in the directory. 
+* Whenever you are working on a project, set up your working directory first. 
+
+```{r, eval=FALSE}
+setwd("path-to-your-project-folder")
+setwd("zoeslaptop/Documents/CEA/introR/")
+```
+
+  * The `setwd()` function sets up your working directory and allows you to access the files and folders in the working directory much easier. 
+  * For example, I want to run the R script `hello.R` in the `Rscript/` folder in your working directory. 
+    
+    * Without setting up the working directory first, I have to type `source("zoeslaptop/Documents/CEA/introR/Rscript/hello.R")`
+    * If setting up the working directory first, I can run the script by this command: `source("Rscript/hello.R")`
+    
+  * The format of path could be slightly different between windows, unix, and linux
+
+* RStudio provides a very nice feature `project`. A project sets up the working environment automatically. Whenever you open a project, you are in the working directory to a specific project alreadly!
+
+  * You could find more information about creating an R project and other useful tip [here](https://zerotorhero.files.wordpress.com/2012/12/data-and-projects-in-r-studio.pdf). 
+
 ## Data input and output
 
 * You could load/read or save/write your own datasets. 
@@ -548,6 +571,7 @@ Follow the instruction [here](https://github.com/zward/Amua/wiki/Getting-Started
   <source src="Figure/Amua_basics5.mp4" type="video/mp4">
 </video>
 
+
 ## Example
 
 Dracula is preparing for a spring break party tonight. But there’s one final decision that Dracula is struggling with. Being a vampire, he intends to bite and suck the blood of some of his guests at the party (about 25% of them, by his best estimate). While being bitten by a vampire won’t turn his guests into vampires or zombies, like some horror movies might suggest, there is a 50% chance that a vampire bite results in a rather severe bacterial infection, of which 66% of cases require hospitalization for an average of 1 night.
@@ -555,55 +579,17 @@ Dracula is preparing for a spring break party tonight. But there’s one final d
 Being a gracious host, Dracula is considering different ways of administering antibiotic prophylaxis to his guests to reduce their risk of infection. One option is to administer the antibiotics to his victim‐guests just before he bites them – this would reduce the risk of a vampire bite infection by 20%. However, the antibiotics can be even more effective, reducing the risk of infection by 90%, if administered at least 30 minutes before being bitten. To achieve this, Dracula is considering putting the antibiotics into the drinks served at the party to ensure that his guests are all properly dosed before he bites his victims. But this means that all his guests would be exposed to the antibiotics (not just those he intends to bite), and he knows that about 5% of people are severely allergic to these antibiotics and would require immediate hospitalization if exposed. Dracula is therefore also considering not administering antibiotic prophylaxis at all to avoid this harm.
 
 However, all the healthy blood doesn't come without cost. This party will cost Dracula \$1000 for a total of 200 guests (an average of \$5 per guest). In addition, Dracula expects the cost of antibiotic to be \$10 for each guest he bites. If Dracula decides to administer the antibiotics in all the drinks served at the party, the total cost of antibioitics is expected to be $100 (Dracula gets discount for buying a large batch of antibiotics!). Also, Dracula is willing to pay for the cost of hospitalization for any guest who experience bacteiral infection due to his bites because he feels responsible. The cost of hospitalization per person per night is \$500. Dracula expects to get an average of 470 mL healthy blood by biting a guest. However, if the guest ends up hospitalized due to bacterial infection, the healthy blood that Dracula can get is reduced by 10%. 
+Dracula hopes that you can help him determine which strategy he should choose.
 
-Dracula hopes you can help him determine which strategy he should choose.
+Think about the following quesitons: 
 
-You can build a decision tree via Amua. 
+1. List out Dracula's strategies. 
+2. What are the potential outcomes for Dracula's party? 
+3. Draw the decision tree for Dracula's party. 
 
-## Wrapper function for decision tree exported from Amua
+**In-class activities**: 
 
-* The decision tree created in Amua can be exported to R. 
-* However, the R script created by Amua is not easy to use for advance CEA analysis (e.g., PSA, one/two-way sensitivity analysis, EVPI, etc.). 
-* We created some wrapper functions to reshape the R script from Amua. This transformation of code allows us to do further analysis using other packages in R. 
-* Install the package using the following code. 
+1. How to convert decision tree from Amua to R code and calculate outcomes.
+2. How to vary parameter values and obtain outcomes for different parameter values.
 
-```{r message = FALSE, warnings = FALSE}
-
-if(!require("remotes")) install.packages("remotes")
-if(!require("CEAutil")) remotes::install_github("syzoekao/CEAutil", dependencies = TRUE)
-
-library(CEAutil)
-```
-
-* We will use two functions from the package to convert the R script exported from Amua. 
-
-  1. `parse_amua_tree()`: 
-
-This function only takes an input argument, the path to the `main.R` file of the Amua decision model. The function returns a list of outputs. Output 1 `param_ls` is a list of input parameters with basecase values used in Amua. Output 2 `treefunc` is the R code of the Amua decision model formatted as text. 
-
-
-```{r class.source = 'fold-show'}
-treetxt <- parse_amua_tree("AmuaExample/DraculaParty_Export/main.R")
-```
-
-
-  2. `dectree_wrapper()`: 
-
-We use the two outputs from the `parse_amua_tree()` as the input arguments in the `dectree_wrapper()`. The input arguments in the wrapper function include `params_basecase`, `treefunc`, and `popsize`. `params_basecase` takes a list of named input parameters. `treefunc` takes the text file organized by the `parse_amua_tree()`. `popsize` is defaulted as 1 but you could change your population size. 
-
-```{r class.source = 'fold-show'}
-param_ls <- treetxt[["param_ls"]]
-treefunc <- treetxt[["treefunc"]]
-```
-
-* The cost and effectiveness of each of Dracula's strategy based on the basecase values
-
-## Change parameter values
-
-* Many of the parameters are organized as a variable in the decision tree. We can easily see how the cost and effectiveness vary with changes of parameters of interest.
-
-**Example 1.** Dracula has been starved over the long cruel winter in Minnesota. The Spring break is the first time that his guests are willing to come to his party in several months. Therefore, Dracula is going to seize the chance to bite as many guests as possible. The probability that he bites a guest is now increased to 50%. What are the cost and effectiveness of each strategy? 
-
-
-**Example 2.** The cost of hospitalization due to bacterial infection varies from guest to guest depending on the healthcare that a guest has. Overall, the cost of hospitalization has a mean of \$500 with a standard deviation \$300 following a gamma distribution. What are the mean cost and effectiveness of the party across all 200 guests? 
 

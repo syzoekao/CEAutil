@@ -90,6 +90,10 @@ length(profile$height)
 profile[profile$name == "Bobbie", ]
 profile[profile$name == "Bobbie", "height"]
 
+#### Set up working directory
+getwd()
+setwd(getwd())
+
 #### Data input and output
 
 load("data/ONtan.rda")

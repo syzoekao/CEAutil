@@ -4,52 +4,51 @@
     <type>0</type>
     <Metadata>
         <author>szu-yukao</author>
-        <dateCreated>Mon Dec 16 22:49:30 CST 2019</dateCreated>
-        <versionCreated>0.2.6</versionCreated>
+        <dateCreated>Wed Mar 11 11:22:40 CDT 2020</dateCreated>
+        <versionCreated>0.2.8</versionCreated>
         <modifier>szu-yukao</modifier>
-        <dateModified>Mon Dec 30 15:33:37 CST 2019</dateModified>
+        <dateModified>Wed Mar 11 14:08:23 CDT 2020</dateModified>
     </Metadata>
     <DimInfo>
         <dimNames>Cost</dimNames>
-        <dimNames>Eff1</dimNames>
-        <dimNames>Eff2</dimNames>
+        <dimNames>Blood</dimNames>
+        <dimNames>Hospitalization</dimNames>
         <dimSymbols>$</dimSymbols>
         <dimSymbols>mL</dimSymbols>
         <dimSymbols>night</dimSymbols>
-        <decimals>4</decimals>
-        <decimals>4</decimals>
-        <decimals>4</decimals>
-        <analysisType>0</analysisType>
+        <decimals>3</decimals>
+        <decimals>3</decimals>
+        <decimals>3</decimals>
+        <analysisType>1</analysisType>
         <objective>0</objective>
-        <objectiveDim>1</objectiveDim>
-        <costDim>1</costDim>
-        <effectDim>0</effectDim>
+        <objectiveDim>0</objectiveDim>
+        <costDim>0</costDim>
+        <effectDim>1</effectDim>
         <WTP>0.0</WTP>
         <baseScenario>Do nothing</baseScenario>
         <extendedDim>0</extendedDim>
     </DimInfo>
-    <scale>84</scale>
+    <scale>88</scale>
     <alignRight>false</alignRight>
+    <Parameter>
+        <name>p_bite</name>
+        <expression>0.25</expression>
+        <notes></notes>
+    </Parameter>
     <Parameter>
         <name>p_inf_bitten</name>
         <expression>0.5</expression>
         <notes></notes>
-        <sensMin>0</sensMin>
-        <sensMax>1</sensMax>
     </Parameter>
     <Parameter>
         <name>p_inf_not_allergic</name>
         <expression>0.4</expression>
         <notes></notes>
-        <sensMin>0</sensMin>
-        <sensMax>1</sensMax>
     </Parameter>
     <Parameter>
         <name>p_inf_bitten_UA</name>
         <expression>0.05</expression>
         <notes></notes>
-        <sensMin>0</sensMin>
-        <sensMax>1</sensMax>
     </Parameter>
     <Parameter>
         <name>C_hospital</name>
@@ -77,12 +76,7 @@
         <notes></notes>
     </Parameter>
     <Parameter>
-        <name>p_bite</name>
-        <expression>0.25</expression>
-        <notes></notes>
-    </Parameter>
-    <Parameter>
-        <name>p_not_allerg</name>
+        <name>p_not_allergic</name>
         <expression>0.95</expression>
         <notes></notes>
     </Parameter>
@@ -91,9 +85,14 @@
         <expression>0.1</expression>
         <notes></notes>
     </Parameter>
+    <Parameter>
+        <name>val_blood</name>
+        <expression>470</expression>
+        <notes></notes>
+    </Parameter>
     <simParamSets>false</simParamSets>
     <simType>0</simType>
-    <cohortSize>200</cohortSize>
+    <cohortSize>1</cohortSize>
     <CRN>false</CRN>
     <crnSeed>-1</crnSeed>
     <displayIndResults>false</displayIndResults>
@@ -103,10 +102,10 @@
         <Node>
             <type>0</type>
             <name>Root</name>
-            <xPos>28</xPos>
-            <yPos>313</yPos>
-            <width>16</width>
-            <height>16</height>
+            <xPos>35</xPos>
+            <yPos>395</yPos>
+            <width>17</width>
+            <height>17</height>
             <parentX>0</parentX>
             <parentY>0</parentY>
             <parentType>0</parentType>
@@ -118,8 +117,6 @@
             <hasVarUpdates>false</hasVarUpdates>
             <visible>true</visible>
             <collapsed>false</collapsed>
-            <cost>0</cost>
-            <cost>0</cost>
             <payoff>0</payoff>
             <payoff>0</payoff>
             <payoff>0</payoff>
@@ -127,12 +124,12 @@
         <Node>
             <type>1</type>
             <name>Do nothing</name>
-            <xPos>177</xPos>
-            <yPos>156</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>44</parentX>
-            <parentY>321</parentY>
+            <xPos>190</xPos>
+            <yPos>220</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>52</parentX>
+            <parentY>403</parentY>
             <parentType>0</parentType>
             <childIndices>4</childIndices>
             <childIndices>5</childIndices>
@@ -151,41 +148,16 @@
         </Node>
         <Node>
             <type>1</type>
-            <name>Universal antibiotics</name>
-            <xPos>180</xPos>
-            <yPos>471</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>44</parentX>
-            <parentY>321</parentY>
-            <parentType>0</parentType>
-            <childIndices>14</childIndices>
-            <childIndices>15</childIndices>
-            <level>1</level>
-            <hasCost>false</hasCost>
-            <hasVarUpdates>false</hasVarUpdates>
-            <visible>true</visible>
-            <collapsed>false</collapsed>
-            <prob>0</prob>
-            <cost>0</cost>
-            <cost>0</cost>
-            <cost>0</cost>
-            <payoff>0</payoff>
-            <payoff>0</payoff>
-            <payoff>0</payoff>
-        </Node>
-        <Node>
-            <type>1</type>
             <name>Targeted antibiotics</name>
-            <xPos>181</xPos>
-            <yPos>313</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>44</parentX>
-            <parentY>321</parentY>
+            <xPos>215</xPos>
+            <yPos>395</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>52</parentX>
+            <parentY>403</parentY>
             <parentType>0</parentType>
-            <childIndices>8</childIndices>
-            <childIndices>9</childIndices>
+            <childIndices>10</childIndices>
+            <childIndices>11</childIndices>
             <level>1</level>
             <hasCost>false</hasCost>
             <hasVarUpdates>false</hasVarUpdates>
@@ -201,13 +173,38 @@
         </Node>
         <Node>
             <type>1</type>
-            <name>bitten</name>
-            <xPos>322</xPos>
-            <yPos>131</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>193</parentX>
-            <parentY>164</parentY>
+            <name>Universal antibiotics</name>
+            <xPos>189</xPos>
+            <yPos>569</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>52</parentX>
+            <parentY>403</parentY>
+            <parentType>0</parentType>
+            <childIndices>18</childIndices>
+            <childIndices>19</childIndices>
+            <level>1</level>
+            <hasCost>false</hasCost>
+            <hasVarUpdates>false</hasVarUpdates>
+            <visible>true</visible>
+            <collapsed>false</collapsed>
+            <prob>0</prob>
+            <cost>0</cost>
+            <cost>0</cost>
+            <cost>0</cost>
+            <payoff>0</payoff>
+            <payoff>0</payoff>
+            <payoff>0</payoff>
+        </Node>
+        <Node>
+            <type>1</type>
+            <name>Bitten</name>
+            <xPos>351</xPos>
+            <yPos>191</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>207</parentX>
+            <parentY>228</parentY>
             <parentType>1</parentType>
             <childIndices>6</childIndices>
             <childIndices>7</childIndices>
@@ -226,13 +223,13 @@
         </Node>
         <Node>
             <type>2</type>
-            <name>not bitten</name>
-            <xPos>322</xPos>
-            <yPos>194</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>193</parentX>
-            <parentY>164</parentY>
+            <name>Not bitten</name>
+            <xPos>352</xPos>
+            <yPos>258</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>207</parentX>
+            <parentY>228</parentY>
             <parentType>1</parentType>
             <level>2</level>
             <hasCost>false</hasCost>
@@ -249,16 +246,16 @@
         </Node>
         <Node>
             <type>1</type>
-            <name>infection</name>
-            <xPos>472</xPos>
-            <yPos>90</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>338</parentX>
-            <parentY>139</parentY>
+            <name>Infection</name>
+            <xPos>503</xPos>
+            <yPos>151</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>368</parentX>
+            <parentY>199</parentY>
             <parentType>1</parentType>
-            <childIndices>20</childIndices>
-            <childIndices>21</childIndices>
+            <childIndices>8</childIndices>
+            <childIndices>9</childIndices>
             <level>3</level>
             <hasCost>false</hasCost>
             <hasVarUpdates>false</hasVarUpdates>
@@ -274,13 +271,13 @@
         </Node>
         <Node>
             <type>2</type>
-            <name>no infection</name>
-            <xPos>473</xPos>
-            <yPos>156</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>338</parentX>
-            <parentY>139</parentY>
+            <name>No infection</name>
+            <xPos>502</xPos>
+            <yPos>215</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>368</parentX>
+            <parentY>199</parentY>
             <parentType>1</parentType>
             <level>3</level>
             <hasCost>false</hasCost>
@@ -292,21 +289,67 @@
             <cost>0</cost>
             <cost>0</cost>
             <payoff>C_donothing</payoff>
+            <payoff>val_blood</payoff>
             <payoff>0</payoff>
+        </Node>
+        <Node>
+            <type>2</type>
+            <name>Hospitalization</name>
+            <xPos>656</xPos>
+            <yPos>130</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>520</parentX>
+            <parentY>159</parentY>
+            <parentType>1</parentType>
+            <level>4</level>
+            <hasCost>false</hasCost>
+            <hasVarUpdates>false</hasVarUpdates>
+            <visible>true</visible>
+            <collapsed>false</collapsed>
+            <prob>p_hospital</prob>
+            <cost>0</cost>
+            <cost>0</cost>
+            <cost>0</cost>
+            <payoff>C_hospital+C_donothing</payoff>
+            <payoff>val_blood*(1-red_blood)</payoff>
+            <payoff>1</payoff>
+        </Node>
+        <Node>
+            <type>2</type>
+            <name>No hospitalization</name>
+            <xPos>656</xPos>
+            <yPos>179</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>520</parentX>
+            <parentY>159</parentY>
+            <parentType>1</parentType>
+            <level>4</level>
+            <hasCost>false</hasCost>
+            <hasVarUpdates>false</hasVarUpdates>
+            <visible>true</visible>
+            <collapsed>false</collapsed>
+            <prob>C</prob>
+            <cost>0</cost>
+            <cost>0</cost>
+            <cost>0</cost>
+            <payoff>C_donothing</payoff>
+            <payoff>val_blood</payoff>
             <payoff>0</payoff>
         </Node>
         <Node>
             <type>1</type>
-            <name>bitten</name>
-            <xPos>327</xPos>
-            <yPos>276</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>197</parentX>
-            <parentY>321</parentY>
+            <name>Bitten</name>
+            <xPos>376</xPos>
+            <yPos>373</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>232</parentX>
+            <parentY>403</parentY>
             <parentType>1</parentType>
-            <childIndices>10</childIndices>
-            <childIndices>11</childIndices>
+            <childIndices>12</childIndices>
+            <childIndices>13</childIndices>
             <level>2</level>
             <hasCost>false</hasCost>
             <hasVarUpdates>false</hasVarUpdates>
@@ -322,13 +365,13 @@
         </Node>
         <Node>
             <type>2</type>
-            <name>not bitten</name>
-            <xPos>326</xPos>
-            <yPos>337</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>197</parentX>
-            <parentY>321</parentY>
+            <name>Not bitten</name>
+            <xPos>376</xPos>
+            <yPos>425</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>232</parentX>
+            <parentY>403</parentY>
             <parentType>1</parentType>
             <level>2</level>
             <hasCost>false</hasCost>
@@ -345,22 +388,22 @@
         </Node>
         <Node>
             <type>1</type>
-            <name>not allergic</name>
-            <xPos>479</xPos>
-            <yPos>233</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>343</parentX>
-            <parentY>284</parentY>
+            <name>Not allergic</name>
+            <xPos>532</xPos>
+            <yPos>325</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>393</parentX>
+            <parentY>381</parentY>
             <parentType>1</parentType>
-            <childIndices>12</childIndices>
-            <childIndices>13</childIndices>
+            <childIndices>14</childIndices>
+            <childIndices>15</childIndices>
             <level>3</level>
             <hasCost>false</hasCost>
             <hasVarUpdates>false</hasVarUpdates>
             <visible>true</visible>
             <collapsed>false</collapsed>
-            <prob>p_not_allerg</prob>
+            <prob>p_not_allergic</prob>
             <cost>0</cost>
             <cost>0</cost>
             <cost>0</cost>
@@ -370,13 +413,13 @@
         </Node>
         <Node>
             <type>2</type>
-            <name>allergic</name>
-            <xPos>478</xPos>
-            <yPos>297</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>343</parentX>
-            <parentY>284</parentY>
+            <name>Allergic</name>
+            <xPos>532</xPos>
+            <yPos>394</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>393</parentX>
+            <parentY>381</parentY>
             <parentType>1</parentType>
             <level>3</level>
             <hasCost>false</hasCost>
@@ -393,16 +436,16 @@
         </Node>
         <Node>
             <type>1</type>
-            <name>infection</name>
-            <xPos>624</xPos>
-            <yPos>198</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>495</parentX>
-            <parentY>241</parentY>
+            <name>Infection</name>
+            <xPos>685</xPos>
+            <yPos>281</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>549</parentX>
+            <parentY>333</parentY>
             <parentType>1</parentType>
-            <childIndices>22</childIndices>
-            <childIndices>23</childIndices>
+            <childIndices>16</childIndices>
+            <childIndices>17</childIndices>
             <level>4</level>
             <hasCost>false</hasCost>
             <hasVarUpdates>false</hasVarUpdates>
@@ -418,13 +461,13 @@
         </Node>
         <Node>
             <type>2</type>
-            <name>no infection</name>
-            <xPos>623</xPos>
-            <yPos>259</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>495</parentX>
-            <parentY>241</parentY>
+            <name>No infection</name>
+            <xPos>685</xPos>
+            <yPos>344</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>549</parentX>
+            <parentY>333</parentY>
             <parentType>1</parentType>
             <level>4</level>
             <hasCost>false</hasCost>
@@ -436,27 +479,73 @@
             <cost>0</cost>
             <cost>0</cost>
             <payoff>C_donothing+C_drug</payoff>
-            <payoff>470</payoff>
+            <payoff>val_blood</payoff>
+            <payoff>0</payoff>
+        </Node>
+        <Node>
+            <type>2</type>
+            <name>Hospitalization</name>
+            <xPos>836</xPos>
+            <yPos>253</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>702</parentX>
+            <parentY>289</parentY>
+            <parentType>1</parentType>
+            <level>5</level>
+            <hasCost>false</hasCost>
+            <hasVarUpdates>false</hasVarUpdates>
+            <visible>true</visible>
+            <collapsed>false</collapsed>
+            <prob>p_hospital</prob>
+            <cost>0</cost>
+            <cost>0</cost>
+            <cost>0</cost>
+            <payoff>C_hospital+C_donothing+C_drug</payoff>
+            <payoff>val_blood*(1-red_blood)</payoff>
+            <payoff>1</payoff>
+        </Node>
+        <Node>
+            <type>2</type>
+            <name>No hospitalization</name>
+            <xPos>836</xPos>
+            <yPos>306</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>702</parentX>
+            <parentY>289</parentY>
+            <parentType>1</parentType>
+            <level>5</level>
+            <hasCost>false</hasCost>
+            <hasVarUpdates>false</hasVarUpdates>
+            <visible>true</visible>
+            <collapsed>false</collapsed>
+            <prob>C</prob>
+            <cost>0</cost>
+            <cost>0</cost>
+            <cost>0</cost>
+            <payoff>C_donothing+C_drug</payoff>
+            <payoff>val_blood</payoff>
             <payoff>0</payoff>
         </Node>
         <Node>
             <type>1</type>
-            <name>not allergic</name>
-            <xPos>325</xPos>
-            <yPos>428</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>196</parentX>
-            <parentY>479</parentY>
+            <name>Not allergic</name>
+            <xPos>350</xPos>
+            <yPos>532</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>206</parentX>
+            <parentY>577</parentY>
             <parentType>1</parentType>
-            <childIndices>16</childIndices>
-            <childIndices>17</childIndices>
+            <childIndices>20</childIndices>
+            <childIndices>21</childIndices>
             <level>2</level>
             <hasCost>false</hasCost>
             <hasVarUpdates>false</hasVarUpdates>
             <visible>true</visible>
             <collapsed>false</collapsed>
-            <prob>p_not_allerg</prob>
+            <prob>p_not_allergic</prob>
             <cost>0</cost>
             <cost>0</cost>
             <cost>0</cost>
@@ -466,13 +555,13 @@
         </Node>
         <Node>
             <type>2</type>
-            <name>allergic</name>
-            <xPos>325</xPos>
-            <yPos>496</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>196</parentX>
-            <parentY>479</parentY>
+            <name>Allergic</name>
+            <xPos>349</xPos>
+            <yPos>604</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>206</parentX>
+            <parentY>577</parentY>
             <parentType>1</parentType>
             <level>2</level>
             <hasCost>false</hasCost>
@@ -489,16 +578,16 @@
         </Node>
         <Node>
             <type>1</type>
-            <name>bitten</name>
-            <xPos>476</xPos>
-            <yPos>384</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>341</parentX>
-            <parentY>436</parentY>
+            <name>Bitten</name>
+            <xPos>501</xPos>
+            <yPos>493</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>367</parentX>
+            <parentY>540</parentY>
             <parentType>1</parentType>
-            <childIndices>18</childIndices>
-            <childIndices>19</childIndices>
+            <childIndices>22</childIndices>
+            <childIndices>23</childIndices>
             <level>3</level>
             <hasCost>false</hasCost>
             <hasVarUpdates>false</hasVarUpdates>
@@ -514,13 +603,13 @@
         </Node>
         <Node>
             <type>2</type>
-            <name>not bitten</name>
-            <xPos>476</xPos>
-            <yPos>450</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>341</parentX>
-            <parentY>436</parentY>
+            <name>Not bitten</name>
+            <xPos>502</xPos>
+            <yPos>562</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>367</parentX>
+            <parentY>540</parentY>
             <parentType>1</parentType>
             <level>3</level>
             <hasCost>false</hasCost>
@@ -537,13 +626,13 @@
         </Node>
         <Node>
             <type>1</type>
-            <name>infection</name>
-            <xPos>620</xPos>
-            <yPos>352</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>492</parentX>
-            <parentY>392</parentY>
+            <name>Infection</name>
+            <xPos>658</xPos>
+            <yPos>457</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>518</parentX>
+            <parentY>501</parentY>
             <parentType>1</parentType>
             <childIndices>24</childIndices>
             <childIndices>25</childIndices>
@@ -562,13 +651,13 @@
         </Node>
         <Node>
             <type>2</type>
-            <name>no infection</name>
-            <xPos>620</xPos>
-            <yPos>409</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>492</parentX>
-            <parentY>392</parentY>
+            <name>No infection</name>
+            <xPos>659</xPos>
+            <yPos>521</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>518</parentX>
+            <parentY>501</parentY>
             <parentType>1</parentType>
             <level>4</level>
             <hasCost>false</hasCost>
@@ -580,110 +669,18 @@
             <cost>0</cost>
             <cost>0</cost>
             <payoff>C_donothing+C_drug_UA</payoff>
-            <payoff>470</payoff>
+            <payoff>val_blood</payoff>
             <payoff>0</payoff>
         </Node>
         <Node>
             <type>2</type>
-            <name>hospitalization</name>
-            <xPos>618</xPos>
-            <yPos>65</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>488</parentX>
-            <parentY>98</parentY>
-            <parentType>1</parentType>
-            <level>4</level>
-            <hasCost>false</hasCost>
-            <hasVarUpdates>false</hasVarUpdates>
-            <visible>true</visible>
-            <collapsed>false</collapsed>
-            <prob>p_hospital</prob>
-            <cost>0</cost>
-            <cost>0</cost>
-            <cost>0</cost>
-            <payoff>C_hospital+C_donothing</payoff>
-            <payoff>470*(1-red_blood)</payoff>
-            <payoff>1</payoff>
-        </Node>
-        <Node>
-            <type>2</type>
-            <name>no hospitalization</name>
-            <xPos>618</xPos>
-            <yPos>115</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>488</parentX>
-            <parentY>98</parentY>
-            <parentType>1</parentType>
-            <level>4</level>
-            <hasCost>false</hasCost>
-            <hasVarUpdates>false</hasVarUpdates>
-            <visible>true</visible>
-            <collapsed>false</collapsed>
-            <prob>C</prob>
-            <cost>0</cost>
-            <cost>0</cost>
-            <cost>0</cost>
-            <payoff>C_donothing</payoff>
-            <payoff>470</payoff>
-            <payoff>0</payoff>
-        </Node>
-        <Node>
-            <type>2</type>
-            <name>hospitalization</name>
-            <xPos>770</xPos>
-            <yPos>173</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>640</parentX>
-            <parentY>206</parentY>
-            <parentType>1</parentType>
-            <level>5</level>
-            <hasCost>false</hasCost>
-            <hasVarUpdates>false</hasVarUpdates>
-            <visible>true</visible>
-            <collapsed>false</collapsed>
-            <prob>p_hospital</prob>
-            <cost>0</cost>
-            <cost>0</cost>
-            <cost>0</cost>
-            <payoff>C_hospital+C_donothing+C_drug</payoff>
-            <payoff>470*(1-red_blood)</payoff>
-            <payoff>1</payoff>
-        </Node>
-        <Node>
-            <type>2</type>
-            <name>no hospitalization</name>
-            <xPos>770</xPos>
-            <yPos>223</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>640</parentX>
-            <parentY>206</parentY>
-            <parentType>1</parentType>
-            <level>5</level>
-            <hasCost>false</hasCost>
-            <hasVarUpdates>false</hasVarUpdates>
-            <visible>true</visible>
-            <collapsed>false</collapsed>
-            <prob>C</prob>
-            <cost>0</cost>
-            <cost>0</cost>
-            <cost>0</cost>
-            <payoff>C_donothing+C_drug</payoff>
-            <payoff>470</payoff>
-            <payoff>0</payoff>
-        </Node>
-        <Node>
-            <type>2</type>
-            <name>hospitalization</name>
-            <xPos>766</xPos>
-            <yPos>327</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>636</parentX>
-            <parentY>360</parentY>
+            <name>Hospitalization</name>
+            <xPos>809</xPos>
+            <yPos>429</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>675</parentX>
+            <parentY>465</parentY>
             <parentType>1</parentType>
             <level>5</level>
             <hasCost>false</hasCost>
@@ -695,18 +692,18 @@
             <cost>0</cost>
             <cost>0</cost>
             <payoff>C_hospital+C_donothing+C_drug_UA</payoff>
-            <payoff>470*(1-red_blood)</payoff>
+            <payoff>val_blood*(1-red_blood)</payoff>
             <payoff>1</payoff>
         </Node>
         <Node>
             <type>2</type>
-            <name>no hospitalization</name>
-            <xPos>766</xPos>
-            <yPos>377</yPos>
-            <width>16</width>
-            <height>16</height>
-            <parentX>636</parentX>
-            <parentY>360</parentY>
+            <name>No hospitalization</name>
+            <xPos>809</xPos>
+            <yPos>482</yPos>
+            <width>17</width>
+            <height>17</height>
+            <parentX>675</parentX>
+            <parentY>465</parentY>
             <parentType>1</parentType>
             <level>5</level>
             <hasCost>false</hasCost>
@@ -718,7 +715,7 @@
             <cost>0</cost>
             <cost>0</cost>
             <payoff>C_donothing+C_drug_UA</payoff>
-            <payoff>470</payoff>
+            <payoff>val_blood</payoff>
             <payoff>0</payoff>
         </Node>
     </tree>
