@@ -81,3 +81,4 @@ hist(tree_vary$Cost$Universalantibiotics, col = rgb(0.3, 0.8, 0.2, 0.5), border 
 legend("topright", c("do nothing", "targeted", "universal"),
        col = c(rgb(0.5, 0.5, 0.5, 0.6), rgb(0.2, 0.2, 0.8, 0.5), rgb(0.3, 0.8, 0.2, 0.5)),
        pch = 15, pt.cex = 2)
+
