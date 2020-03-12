@@ -2,7 +2,7 @@ This repository is an R package for the CEA class at UMN. To directly download t
 
 ```{r}
 if (!require(devtools)) install.packages("devtools")
-devtools::install_packages("syzoekao/CEAutil", dependencies = TRUE)
+devtools::install_github("syzoekao/CEAutil", dependencies = TRUE)
 ```
 To have a physical copy and to edit the code, you can also clone the repository by clicking the "Clone or download" button. 
 

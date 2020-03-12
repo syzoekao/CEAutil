@@ -132,7 +132,7 @@ dectree_wrapper <- function(params_basecase, treefunc, popsize = 1, vary_param_s
     if (!is.data.frame(vary_param_samp)) stop("vary_param_samp should be in a data.frame")
     if (any(!(colnames(vary_param_samp) %in% names(params_basecase)))) {
       rm_names <- colnames(vary_param_samp)[!(colnames(vary_param_samp) %in% names(params_basecase))]
-      warning(paste0(rm_names, " are not the parameters included in params_basecase. The function will ingore these parameters."))
+      warning(paste0(rm_names, " are not the parameters included in params_basecase. The function will ignore these parameters."))
     }
 
     n_samp <- nrow(vary_param_samp)
