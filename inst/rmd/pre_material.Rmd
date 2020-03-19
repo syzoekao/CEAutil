@@ -19,13 +19,13 @@ This lecture is to introduce the elements in R programming language that are rel
 
 * Install R and RStudio
 * Data type
+* Path to your working directory
 * Data input and output
 * For loop
 * If statement
 * R function
 * Plots 
 * Useful packages in the class 
-* Project management
 
 ## Install R and RStudio
 

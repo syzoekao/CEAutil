@@ -117,13 +117,26 @@ print(fib_vec)
 popsize <- rep(3000, 100)
 
 # Calculate
+popdf <- data.frame(year = c(2400:2500),
+                    popsize = popsize)
+
 for (t in c(1 : 100)) {
   popsize[t + 1] <- popsize[t] + 0.05 * popsize[t] * (1 - popsize[t] / 100000)
 }
-
-popdf <- data.frame(year = c(2400:2500),
-                    popsize = popsize)
 print(popdf[popdf$year == 2500, ])
+
+# Graph each step
+popdf <- data.frame(year = c(2400:2500),
+                    popsize = c(3000, rep(NA, 100)))
+plot(popdf$year, popdf$popsize, xlim = c(2400, 2500), ylim = c(0, 81000),
+     main = "Population growth on Mars", type = "l", col = "dodgerblue", lwd = 3,
+     xlab = "year", ylab = "popsize")
+for (t in c(1 : 100)) {
+  Sys.sleep(0.05)
+  popdf$popsize[t + 1] <- popdf$popsize[t] + 0.05 * popdf$popsize[t] * (1 - popdf$popsize[t] / 100000)
+  lines(popdf$year, popdf$popsize, col = "dodgerblue", lwd = 3)
+}
+
 
 #### If statement
 
@@ -204,8 +217,9 @@ legend("topleft", legend=c("US", "UK"),
        col=c("red", "royalblue"), lty = 1, cex = 0.8)
 
 #### Packages
-if(!require(ggplot2)) install.packages("ggplot2")
 if(!require(devtools)) install.packages("devtools")
 if(!require(remotes)) install.packages("remotes")
+if(!require(remotes)) install.packages("dplyr")
+if(!require(ggplot2)) install.packages("ggplot2")
 if(!require(dampack)) remotes::install_github("DARTH-git/dampack", dependencies = TRUE)
 if(!require(CEAutil)) remotes::install_github("syzoekao/CEAutil", dependencies = TRUE)
