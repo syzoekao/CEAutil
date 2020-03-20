@@ -234,7 +234,7 @@ setwd("zoeslaptop/Documents/CEA/introR/")
 ```
 
   * The `setwd()` function sets up your working directory and allows you to access the files and folders in the working directory much easier. 
-  * For example, I want to run the R script `hello.R` in the `Rscript/` folder in your working directory. 
+  * For example, I want to run the R script `hello.R` in the `Rscript/` folder in my working directory. 
     
     * Without setting up the working directory first, I have to type `source("zoeslaptop/Documents/CEA/introR/Rscript/hello.R")`
     * If setting up the working directory first, I can run the script by this command: `source("Rscript/hello.R")`
@@ -397,8 +397,7 @@ if (x %in% Jedi) {
 speak <- function(x) {
   Jedi <- c("yoda", "windu", "kenobi")
   Mandalorian <- c("satine", "sabine", "jango")
-  
-  membership <- "Not Jedi or Mandalorian"
+
   if (x %in% Jedi) {
     say <- "May the force be with you!"
     membership <- "Jedi"
@@ -407,6 +406,7 @@ speak <- function(x) {
     membership <- "Mandalorian"
   } else {
     say <- "Hello, world!"
+    membership <- "Not Jedi or Mandalorian"
   }
   return(list(say = say, membership = membership))
 }
