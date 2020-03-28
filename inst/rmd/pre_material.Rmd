@@ -587,9 +587,168 @@ Think about the following quesitons:
 2. What are the potential outcomes for Dracula's party? 
 3. Draw the decision tree for Dracula's party. 
 
-**In-class activities**: 
+You can build a decision tree via Amua. 
 
-1. How to convert decision tree from Amua to R code and calculate outcomes.
-2. How to vary parameter values and obtain outcomes for different parameter values.
+* The tree structure
+
+![](Figure/DraculaTree.png)
+
+* The parameters
+
+![](Figure/DraculaTreeParameterTable.png){width=250px}
+
+* The CEA outcomes
+
+![](Figure/DraculaTreeCEA.png)
+
+## Wrapper function for decision tree exported from Amua
+
+* The decision tree created in Amua can be exported to R. 
+* However, the R script created by Amua is not easy to use for advance CEA analysis (e.g., PSA, one/two-way sensitivity analysis, EVPI, etc.). 
+* We created some wrapper functions to reshape the R script from Amua. This transformation of code allows us to do further analysis using other packages in R. 
+* Install the package using the following code. 
+
+```{r message = FALSE, warnings = FALSE}
+
+if(!require("remotes")) install.packages("remotes")
+if(!require("dplyr")) install.packages("dplyr")
+if(!require("CEAutil")) remotes::install_github("syzoekao/CEAutil", dependencies = TRUE)
+if(!require(dampack)) remotes::install_github("DARTH-git/dampack", dependencies = TRUE)
+
+library(CEAutil)
+```
+
+* We will use two functions from the package to convert the R script exported from Amua. 
+
+  1. `parse_amua_tree()`: 
+
+This function only takes an input argument, the path to the `main.R` file of the Amua decision model. The function returns a list of outputs. Output 1 `param_ls` is a list of input parameters with basecase values used in Amua. Output 2 `treefunc` is the R code of the Amua decision model formatted as text. 
 
 
+```{r class.source = 'fold-show'}
+treetxt <- parse_amua_tree("AmuaExample/DraculaParty_Export/main.R")
+
+print(treetxt$param_ls)
+```
+
+
+  2. `dectree_wrapper()`: 
+
+We use the two outputs from the `parse_amua_tree()` as the input arguments in the `dectree_wrapper()`. The input arguments in the wrapper function include `params_basecase`, `treefunc`, and `popsize`. `params_basecase` takes a list of named input parameters. `treefunc` takes the text file organized by the `parse_amua_tree()`. `popsize` is defaulted as 1 but you could change your population size. 
+
+```{r class.source = 'fold-show'}
+param_ls <- treetxt[["param_ls"]]
+treefunc <- treetxt[["treefunc"]]
+```
+
+* Expected cost per person
+
+```{r}
+tree_output <- dectree_wrapper(params_basecase = param_ls, treefunc = treefunc, popsize = 1)
+print(tree_output)
+```
+
+* Expected cost of 200 guests
+
+```{r}
+tree_output <- dectree_wrapper(params_basecase = param_ls, treefunc = treefunc, popsize = 200)
+print(tree_output)
+```
+
+## Calculate ICERs 
+
+```{r}
+library(dampack)
+dracula_icer <- calculate_icers(tree_output$Cost,
+                                tree_output$expectedBlood,
+                                tree_output$strategy)
+print(dracula_icer)
+```
+
+* Create an ICER plot
+
+```{r}
+plot(dracula_icer, effect_units = "mL")
+```
+
+
+## Change parameter values
+
+* Many of the parameters are organized as a variable in the decision tree. We can easily see how the cost and effectiveness vary with changes of parameters of interest.
+
+**Example 1.** Dracula has been starved over the long cruel winter in Minnesota. The Spring break is the first time that his guests are willing to come to his party in several months. Therefore, Dracula is going to seize the chance to bite as many guests as possible. The probability that he bites a guest is now increased to 50%. What are the cost and effectiveness of each strategy? 
+
+```{r}
+param_ls$p_bite <- 0.5
+
+tree_output <- dectree_wrapper(params_basecase = param_ls, treefunc = treefunc, popsize = 200)
+
+print(tree_output)
+```
+
+* ICER & ICER plot
+
+```{r}
+dracula_icer <- calculate_icers(tree_output$Cost,
+                                tree_output$expectedBlood,
+                                tree_output$strategy)
+print(dracula_icer)
+plot(dracula_icer, effect_units = "mL")
+```
+
+
+**Example 2.** The cost of hospitalization due to bacterial infection varies from guest to guest depending on the healthcare that a guest has. Overall, the cost of hospitalization has a mean of \$500 with a standard deviation \$300 following a gamma distribution. What are the mean cost and effectiveness of the party across all 200 guests? 
+
+* Generate 200 samples of the cost of hospitalization from gamma distribution
+
+```{r message = FALSE, warning = FALSE}
+require(dampack)
+
+C_hospital <- gen_psa_samp(params = c("C_hospital"),
+                           dists = c("gamma"),
+                           parameterization_types = c("mean, sd"),
+                           dists_params = list(c(500, 250)),
+                           nsamp = 200)
+
+cat("mean and sd are", c(mean(C_hospital$C_hospital), sd(C_hospital$C_hospital)), ", respectively.")
+
+hist(C_hospital$C_hospital, main = "histogram", xlab = "values", ylab = "frequency", col = "gray", border = F)
+abline(v = mean(C_hospital$C_hospital), col = "firebrick", lwd = 3)
+text(mean(C_hospital$C_hospital) + 50, 30, "mean\ncost", col = "firebrick", font = 2)
+```
+
+* Calculate the expected cost and effectiveness for each sample of cost 
+
+```{r}
+tree_vary <- dectree_wrapper(params_basecase = param_ls, 
+                             treefunc = treefunc, 
+                             vary_param_samp = C_hospital)
+```
+
+* Let's take a look at some elements in the tree_vary output
+
+```{r}
+print(names(tree_vary))
+print(head(tree_vary$param_samp))
+print(head(tree_vary$expectedBlood))
+print(head(tree_vary$Cost))
+```
+
+* The mean cost 
+
+```{r}
+print(summary(tree_vary$Cost))
+```
+
+* How the expected cost differs between strategy? 
+
+```{r}
+hist(tree_vary$Cost$Donothing, col = rgb(0.5, 0.5, 0.5, 0.6), border = F,
+     main = c("Cost of hospitalization"),
+     xlab = "Cost")
+hist(tree_vary$Cost$Targetedantibiotics, col = rgb(0.2, 0.2, 0.8, 0.5), border = F, add = T)
+hist(tree_vary$Cost$Universalantibiotics, col = rgb(0.3, 0.8, 0.2, 0.5), border = F, add = T)
+legend("topright", c("do nothing", "targeted", "universal"),
+       col = c(rgb(0.5, 0.5, 0.5, 0.6), rgb(0.2, 0.2, 0.8, 0.5), rgb(0.3, 0.8, 0.2, 0.5)),
+       pch = 15, pt.cex = 2)
+```
