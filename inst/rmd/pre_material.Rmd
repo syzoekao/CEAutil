@@ -752,3 +752,94 @@ legend("topright", c("do nothing", "targeted", "universal"),
        col = c(rgb(0.5, 0.5, 0.5, 0.6), rgb(0.2, 0.2, 0.8, 0.5), rgb(0.3, 0.8, 0.2, 0.5)),
        pch = 15, pt.cex = 2)
 ```
+
+
+# Markov model
+
+## Agenda
+
+* General Markov model coding structure
+* Follow the coding steps using an example
+* The template of Markov model function 
+* Consideration of strategies 
+* Prepare your Markov model for further analyses
+
+## General Markov model coding structure
+
+* We will show how to code a Markov model step by step. 
+* In general, we follow this structure: 
+
+```{}
+markov_model <- function(l_param_all,
+                         strategy = NULL) {
+  #### 1. Read in, define, or transform parameters if needed
+  
+  #### 2. Create the transition probability matrices using array
+  
+  #### 3. Create the trace matrix to track the changes in the population distribution 
+  #### through time. You could also create other matrix to track different outcomes,
+  #### e.g., costs, incidence, etc.
+  
+  #### 4. Get outputs
+  
+  #### 5. Return the relevant results
+}
+```
+
+* Then we write this process into a function `markov_model()`
+
+## Example 
+
+The Canadian province of Ontario is considering a province-wide ban on indoor tanning as a means of preventing skin cancer, with a focus on young women. The Ontario Ministry of Health has just finished a large observational study on tanning behaviors and skin cancer incidence among women in Ontario to inform their decision.
+
+In their surveillance study, they found that skin cancer risks differ substantially for individuals who visit tanning salons regularly (“regular tanners”) and those who do not ("non-tanners"). The annual risk of skin cancer was 4% for regular tanners vs. 0.5% for non-tanners. (Assume that skin cancer risk depends only on current tanning behavior and not on tanning history).
+
+The Ministry of Health also studied tanning behaviors. They estimated the annual probability of a non-tanner becoming a regular tanner, by age, among women. This probability begins increasing around age 12, peaks at age 24 and then begins to decrease. They also estimated the rate of a regular tanner becoming a non-tanner. This probability is low until age 30, after which it increases with age. These data are summarized in the dataset `ONtan` in the `CEAutil` package.
+
+Skin cancer resolves within one year of diagnosis, with 7% of cases resulting in death. Those who recover following a skin cancer diagnosis nearly all quit tanning, though they re-initiate indoor tanning at the same rate as their peers who have not experienced skin cancer.
+
+The Ontario Ministry of Health is considering an indoor tanning ban for those 18 years of age and younger (reducing the rate of tanning initiation to zero among this age group). They are also considering a full indoor tanning ban, which would reduce the rate of tanning initiation to zero for everyone in Ontario. They would like to evaluate the impact that each of these policies would have over the lifetime of a cohort of 10-year-old girls. The Ministry of Health does not wish to discount outcomes.
+
+1. Draw a Markov model diagram of tanning behavior and skin cancer that the Ontario Ministry of Health could use to evaluate their tanning policies in terms of the desired outcomes. Use a yearly time step. Include the following states: "Non-tanners", "Regular tanners", "Skin cancer", "Dead from skin cancer", and "Dead from other causes". Label all transition probabilities and indicate which are changing over time.
+
+2. Calcuate the remaining life-expectancy of a 10-year-old girl under each strategy.
+
+### Step 0. Model setup 
+
+Before doing any actual coding: 
+
+1. Draw your Markov model diagram
+2. Figure out your parameters 
+
+    + Which are fixed? 
+    + Which are time varying? 
+    + Do you have parameters that require calibration? 
+    
+        * This is not relevant to our example here but it might happen in your other projects.
+
+3. What is the time horizon? 
+
+4. What is the cycle length? 
+    
+5. Draw your own Markov diagram
+
+### Step 1. Set up parameters, data, and variables required
+
+* We start with setting up parameter values, function, or transformation. 
+* Provide your parameter table: 
+
+### Step 2. Create the transition probability array 
+
+
+### Step 3. Create the trace matrix and outcome matrix 
+
+
+### Step 4. Compute the Markov model over time
+
+
+### Step 5. Organize outputs
+
+
+
+
+

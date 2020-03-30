@@ -811,26 +811,28 @@ Before doing any actual coding:
 1. Draw your Markov model diagram
 2. Figure out your parameters 
 
-  + which are fixed? 
-  + which are time varying? 
-  + do you have parameters that require calibration? 
+    + Which are fixed? 
+    + Which are time varying? 
+    + Do you have parameters that require calibration? 
+      
+        * This is not relevant to our example here but it might happen in your other projects.
 
 3. What is the time horizon? 
   
-  + 100 years
+    + 100 years
 
 4. What is the cycle length? 
     
-  + annual time step
+    + annual time step
 
-Here is the Markov model diagram: 
+5. Draw your own Markov diagram
 
 ![](Figure/skin cancer.png)
 
 ### Step 1. Set up parameters, data, and variables required
 
 * We start with setting up parameter values, function, or transformation. 
-* The parameters included in this example: 
+* Provide your parameter table: 
 
 ```{r, echo = FALSE, message = FALSE, warning = FALSE}
 library(kableExtra)
