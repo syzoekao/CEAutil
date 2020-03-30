@@ -17,10 +17,10 @@ markov_model <- function(l_param_all,
     ages <- c(10 : (10 + n_t - 1))
     p_mort <- ltable$qx[match(ages, ltable$age)]
 
-    if (strategy == "targeted ban") {
+    if (strategy == "targeted_ban") {
       behavior$p_init_tanning[behavior$age <= 18] <- 0
     }
-    if (strategy == "universal ban") {
+    if (strategy == "universal_ban") {
       behavior$p_init_tanning <- 0
     }
 
@@ -83,9 +83,22 @@ markov_model <- function(l_param_all,
     }
 
     #### Step 5. Organize outputs
+    # Cost
+    tot_cost <- 0 # if there is no tanning ban
+    if (strategy == "targeted_ban") {
+      tot_cost <- n_worker * target_red * salary
+    }
+    if (strategy == "universal_ban") {
+      tot_cost <- n_worker * universal_red * salary
+    }
+
+    # Life expectancy
     LE <- sum(rowSums(trace_mat[, !grepl("dead", state_names)])) - 1
+
+    # Output table
     output <- data.frame("strategy" = strategy,
-                         "LE" = LE)
+                         "LE" = LE,
+                         "Cost" = tot_cost)
 
     #### Step 6. Return the relevant results
     return(output)
