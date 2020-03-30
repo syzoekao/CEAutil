@@ -1,6 +1,8 @@
 #############################################
 # Markov model
 #############################################
+if(!require(dampack)) remotes::install_github("DARTH-git/dampack", dependencies = TRUE)
+if(!require(CEAutil)) remotes::install_github("syzoekao/CEAutil", dependencies = TRUE)
 
 library(CEAutil)
 library(dampack)
