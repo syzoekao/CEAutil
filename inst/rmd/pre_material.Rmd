@@ -800,12 +800,11 @@ Skin cancer resolves within one year of diagnosis, with 7% of cases resulting in
 
 The Ontario Ministry of Health is considering an indoor tanning ban for those 18 years of age and younger (reducing the rate of tanning initiation to zero among this age group). They are also considering a full indoor tanning ban, which would reduce the rate of tanning initiation to zero for everyone in Ontario. 
 
-However, indoor tanning ban would result in reduced demand for indoor tanning and decrease the number of employees hired in these facilities (there are currently about 1000 employees in the industry). Indoor tanning ban among women younger than 18 year-old would reduce the employmenet by 10% in the industry. A full indoor tanning ban would reduce the employmenet by 80%. We assume that the average annual salary of an employee is 28,000 Canadian dollars. The Ontario Ministry of Health would like to conduct cost-effectiveness analysis for the health benefit over the lifetime of a cohort of 10-year-old girls by considering the cost. The Ministry of Health does not wish to discount outcomes.
+However, indoor tanning ban would result in reduced demand for indoor tanning and decrease the number of employees hired in these facilities (there are currently about 1000 employees in the industry). Indoor tanning ban among women younger than 18 year-old would reduce the employmenet by 10% in the industry. A full indoor tanning ban would reduce the employmenet by 80%. We assume that the average annual salary of an employee is 28,000 Canadian dollars. The Ontario Ministry of Health would like to conduct cost-effectiveness analysis for the health benefit over the lifetime of a cohort of 10-year-old girls by considering the cost. Because the outcome is life expectancy, the Ministry of Health does not wish to discount outcomes. (However, if the outcome is QALY, we would discount the outcome at 5% per year for Canadians!)
 
 1. Draw a Markov model diagram of tanning behavior and skin cancer that the Ontario Ministry of Health could use to evaluate their tanning policies in terms of the desired outcomes. Use a yearly time step. Include the following states: "Non-tanners", "Regular tanners", "Skin cancer", "Dead from skin cancer", and "Dead from other causes". Label all transition probabilities and indicate which are changing over time.
 
 2. Calcuate the remaining life-expectancy of a 10-year-old girl under each strategy.
-
 
 ### Step 0. Model setup 
 
@@ -813,36 +812,364 @@ Before doing any actual coding:
 
 1. Draw your Markov model diagram
 2. Figure out your parameters 
-
-    + Which are fixed? 
-    + Which are time varying? 
-    + Do you have parameters that require calibration? 
-    
-        * This is not relevant to our example here but it might happen in your other projects.
-
 3. What is the time horizon? 
-
 4. What is the cycle length? 
-    
-5. Draw your own Markov diagram
 
 ### Step 1. Set up parameters, data, and variables required
 
 * We start with setting up parameter values, function, or transformation. 
 * Provide your parameter table: 
 
+* You could find the tanning behavior and the life table in the `CEAutil` package. 
+
+```{r}
+library(CEAutil)
+
+data(ONtan)
+ltable <- ONtan$lifetable
+behavior <- ONtan$behavior
+
+print(head(ltable))
+print(head(behavior))
+```
+
+* For the constant parameters: 
+
+```{r}
+p_nontan_to_cancer <- 0.005
+p_regtan_to_cancer <- 0.04
+p_cancer_to_dead <- 0.07
+n_worker <- 1000
+salary <- 28000
+target_red <- 0.1
+universal_red <- 0.8
+```
+
+* In addition, we have other required variables 
+
+    + timehorizon (`n_t`)
+    + names of each health state (`state_names`)
+    + initial status (`v_init`)
+
+```{r}
+n_t <- 100 
+state_names <- c("nontan", "regtan", "cancer", "deadnature", "deadcancer")
+v_init <- c(1, 0, 0, 0, 0)
+```
+
+* These input parameters are often defined **outside** the `markov_model()` function. In this model framework, we use `list()` to combine all the parameters, data, and variables defined beforehand. We provide the name for each the element in the list. 
+
+```{r}
+l_param_all <- list(p_nontan_to_cancer = 0.005,
+                    p_regtan_to_cancer = 0.04,
+                    p_cancer_to_dead = 0.07, 
+                    n_worker = 1000, 
+                    salary = 28000, 
+                    target_red = 0.1,
+                    universal_red = 0.8, 
+                    ltable = ltable,
+                    behavior = behavior, 
+                    state_names = c("nontan", "regtan", "cancer", "deadnature", "deadcancer"),
+                    n_t = 100,
+                    v_init = c(1, 0, 0, 0, 0))
+```
+
+* In the function, we start with some basic calculation and transformation of the input parameters, data, and variables that will be used in the Markov model. 
+
+```{r, eval = FALSE}
+#### 1. Read in, set, or transform parameters if needed
+# We need the age index for matching values of the lifetable and behavior data.
+ages <- c(10 : (10 + n_t - 1))
+
+# We extract the probability of natural death age 10-110 from the lifetable. 
+p_mort <- ltable$qx[match(ages, ltable$age)]
+
+# We modify the values of tanning behavior based on strategy of interest.
+if (strategy == "targeted_ban") {
+  behavior$p_init_tanning[behavior$age <= 18] <- 0
+}
+if (strategy == "universal_ban") {
+  behavior$p_init_tanning <- 0
+}
+
+# We extract the tanning behavior at age 10-110 from the behavior data 
+p_init_tan <- behavior$p_init_tanning[match(ages, behavior$age)]
+p_halt_tan <- behavior$p_halt_tanning[match(ages, behavior$age)]
+
+# We get the number of health states based on the length of the string vector, state_names
+n_states <- length(state_names)
+```
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+ages <- c(10 : (10 + n_t - 1))
+
+# We extract the probability of natural death age 10-110 from the lifetable. 
+p_mort <- ltable$qx[match(ages, ltable$age)]
+
+# # We modify the values of tanning behavior based on strategy of interest.
+# if (strategy == "targeted_ban") {
+#   behavior$p_init_tanning[behavior$age <= 18] <- 0
+# }
+# if (strategy == "universal_ban") {
+#   behavior$p_init_tanning <- 0
+# }
+
+# We extract the tanning behavior at age 10-110 from the behavior data 
+p_init_tan <- behavior$p_init_tanning[match(ages, behavior$age)]
+p_halt_tan <- behavior$p_halt_tanning[match(ages, behavior$age)]
+
+# We get the number of health states based on the length of the string vector, state_names
+n_states <- length(state_names)
+```
+
 ### Step 2. Create the transition probability array 
 
+* A transition probability matrix contains the transition probability from one health state to another state. 
+
+```{r, echo = FALSE}
+transit_matrix <- matrix(c(0.1, 0.2, 0.7, 
+                           0.5, 0.1, 0.4, 
+                           0.7, 0, 0.3), byrow = T, ncol = 3, 
+                         dimnames = list(c("state1", "state2", "state3"), 
+                                         c("state1", "state2", "state3")))
+print(transit_matrix)
+```
+
+* In many of our applications, individuals transit from the row state to the column state. Each row should sum up to 1. 
+
+```{r}
+print(rowSums(transit_matrix))
+```
+
+* The transition probability array can contain more than one transition matrix. Because the behavior and mortality vary over time. The transition matrix is different from year to year. Thus, we create a transition array with the following dimension $n\_state \times n\_state \times n\_t$. 
+
+```{r}
+tr_mat <- array(0, dim = c(n_states, n_states, n_t),
+                dimnames = list(state_names, state_names, ages))
+```
+
+* We initiate the transition array with 0 because most transition probabilities are zeros. 
+* Then we modify the transition probabilities for each origin state. 
+
+```{r}
+# 1. Fill out the transition probabilities from non-tanner to other states
+tr_mat["nontan", "regtan", ] <- p_init_tan
+tr_mat["nontan", "cancer", ] <- p_nontan_to_cancer
+tr_mat["nontan", "deadnature", ] <- p_mort
+tr_mat["nontan", "nontan", ] <- 1 - p_init_tan - p_nontan_to_cancer - p_mort
+
+# 2. Fill out the transition probabilities from regular tanner to other states
+tr_mat["regtan", "nontan", ] <- p_halt_tan
+tr_mat["regtan", "cancer", ] <- p_regtan_to_cancer
+tr_mat["regtan", "deadnature", ] <- p_mort
+tr_mat["regtan", "regtan", ] <- 1 - p_halt_tan - p_regtan_to_cancer - p_mort
+
+# 3. Fill out the transition probabilities from skin cancer to other states.
+#    Be careful that this is a tunnel state. Therefore, there is no self loop.
+tr_mat["cancer", "deadcancer", ] <- p_cancer_to_dead
+tr_mat["cancer", "deadnature", ] <- p_mort
+tr_mat["cancer", "nontan", ] <- 1 - p_cancer_to_dead - p_mort
+
+# 4. Fill out the transition probabilities for cancer specific death (this is an absorbing state!!)
+tr_mat["deadcancer", "deadcancer", ] <- 1
+
+# 5. Fill out the transition probabilities for natural death (this is an absorbing state!!)
+tr_mat["deadnature", "deadnature", ] <- 1
+```
+
+* Let's see two slice of the transition array
+
+```{r}
+print(tr_mat[, , "20"])
+```
+
+```{r}
+print(tr_mat[, , "50"])
+```
+
+* Check whether the transition array meets the criteria of transition matrix
+
+```{r}
+# Check whether the transition matrices have any negative values or values > 1!!!
+if (sum(tr_mat > 1) | sum(tr_mat < 0)) stop("there are invalid transition probabilities")
+
+# Check whether each row of a transition matrix sum up to 1!!!
+if (any(rowSums(t(apply(tr_mat, 3, rowSums))) != n_states)) stop("transition probabilities do not sum up to one")
+```
 
 ### Step 3. Create the trace matrix and outcome matrix 
 
+* Initialize the trace matrix and replace the first row with the initial state (`v_init`)
+
+```{r}
+#### 3. Create the trace matrix to track the changes in the population distribution through time
+#### You could also create other matrix to track different outcomes,
+#### e.g., costs, incidence, etc.
+trace_mat <- matrix(0, ncol = n_states, nrow = n_t + 1,
+                    dimnames = list(c(10 : (10 + n_t)), state_names))
+# Modify the first row of the trace_mat using the v_init
+trace_mat[1, ] <- v_init
+```
+
+* If you are interested in tracking other outcomes, initialize an empty matrix here. 
+
+```{r}
+# Suppose that we want to track the cost of having skin cancer for a year
+trace_cost <- rep(0, n_t)
+```
 
 ### Step 4. Compute the Markov model over time
 
+* We use `for()` loop to iterate the calculation through time. 
+
+```{r}
+#### 4. Compute the Markov model over time by iterating through time steps
+for(t in 1 : n_t){
+  trace_mat[t + 1, ] <- trace_mat[t, ] %*% tr_mat[, , t]
+}
+```
 
 ### Step 5. Organize outputs
 
+* The outcome in this example is "expected life years" (`LE`) and total cost due to laying off workers in the industry. 
 
 
+    + Calculate the cost associated with each strategy
+    + Calculate the sums by each row for the remaining columns. 
+    + Calculate the life expectancy by summing up all the values. 
 
+
+* We organize the output in a `data.frame` with the strategy in the first column and `LE` as the second column. 
+* You could add more columns to the `data.frame` if you have more outcomes of interest (e.g., cost) 
+
+```{r, eval = F}
+#### 5. Organize outputs
+# Cost
+tot_cost <- 0 # if there is no tanning ban
+if (strategy == "targeted_ban") {
+  tot_cost <- n_worker * target_red * salary
+}
+if (strategy == "universal_ban") {
+  tot_cost <- n_worker * universal_red * salary
+}
+
+# Life expectancy
+LE <- sum(rowSums(trace_mat[, !grepl("dead", state_names)])) - 1
+
+# Output table
+output <- data.frame("strategy" = strategy,
+                     "LE" = LE,
+                     "Cost" = tot_cost)
+```
+
+### Step 6. Return the relevant outputs
+
+* Finally, return the outputs/results from the function. 
+
+```{r, eval = FALSE}
+return(output)
+```
+
+* You could return a list of outputs. For example, if you want to also return the trace matrix, you could do this: 
+
+```{r, eval = FALSE}
+return(list(output = output, trace = trace_mat))
+```
+
+## The template Markov model function
+
+* You could find the template Markov model function in the `CEAutil` package. 
+* You can modify the function for your project. 
+
+
+```{r}
+library(CEAutil)
+
+print(markov_model)
+```
+
+## Strategies 
+
+* Notice that the `markov_model()` function has another argument `strategy`. 
+* Specifying different strategy produces different life expectancy. 
+* In our example, there are three types of strategies: "null", "targeted_ban", "universal_ban". The default value is NULL, which means null strategy. 
+
+```{r}
+print(markov_model(l_param_all = l_param_all, strategy = "null"))
+print(markov_model(l_param_all = l_param_all, strategy = "targeted_ban"))
+print(markov_model(l_param_all = l_param_all, strategy = "universal_ban"))
+```
+
+* In our example, the strategy is modifying the probability of initiating tanning. Therefore, we program the effect of strategy at step 1. 
+* However, strategies are sometimes more complicated to capture. The influence of different strategy might occur in step 2 and step 4 (if the calculation of transition probability at step *t* depends on the state of step *t* - 1). 
+
+## Markov model wrapper function
+
+* Calculating the results for each strategy one by one is easy for one set of parameters but might become more and more tedious when the scope of the job is growing.  
+* `markov_decision_wrapper()` is to calculate the results of all strategies all at once. 
+
+    + `vary_param_ls`: the parameters that could change in other more advance analyses
+    + `other_input_ls`: the paramters, datasets, and variables that do not change from simulation to simulation
+    + `userfun`: the Markov model function. You could also create your own Markov model function 
+    + `strategy_set`: The vector of the strategy names.  
+
+```{r}
+vary_param_ls <- list(p_nontan_to_cancer = 0.005,
+                      p_regtan_to_cancer = 0.04,
+                      p_cancer_to_dead = 0.07, 
+                      n_worker = 1000, 
+                      salary = 28000, 
+                      target_red = 0.1,
+                      universal_red = 0.8)
+
+other_input_ls <- list(ltable = ltable,
+                       behavior = behavior,
+                       state_names = c("nontan", "regtan", "cancer", "deadnature", "deadcancer"),
+                       n_t = 100,
+                       v_init = c(1, 0, 0, 0, 0))
+res <- markov_decision_wrapper(vary_param_ls = vary_param_ls,
+                               other_input_ls = other_input_ls,
+                               userfun = markov_model,
+                               strategy_set = c("null", "targeted_ban", "universal_ban"))
+print(res)
+```
+
+* CEA results
+
+```{r}
+tan_icer <- calculate_icers(res$Cost,
+                            res$LE,
+                            res$strategy)
+print(tan_icer)
+plot(tan_icer)
+```
+
+
+* We can change the values in the `l_param_all` easily. 
+
+```{r}
+vary_param_ls <- list(p_nontan_to_cancer = 0.005,
+                      p_regtan_to_cancer = 0.2,
+                      p_cancer_to_dead = 0.1, 
+                      n_worker = 1000, 
+                      salary = 28000, 
+                      target_red = 0.1,
+                      universal_red = 0.8)
+
+res <- markov_decision_wrapper(vary_param_ls = vary_param_ls,
+                               other_input_ls = other_input_ls,
+                               userfun = markov_model,
+                               strategy_set = c("null", "targeted_ban", "universal_ban"))
+print(res)
+```
+
+* CEA results
+
+```{r}
+tan_icer <- calculate_icers(res$Cost,
+                            res$LE,
+                            res$strategy)
+print(tan_icer)
+plot(tan_icer)
+```
 

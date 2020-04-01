@@ -800,7 +800,7 @@ Skin cancer resolves within one year of diagnosis, with 7% of cases resulting in
 
 The Ontario Ministry of Health is considering an indoor tanning ban for those 18 years of age and younger (reducing the rate of tanning initiation to zero among this age group). They are also considering a full indoor tanning ban, which would reduce the rate of tanning initiation to zero for everyone in Ontario. 
 
-However, indoor tanning ban would result in reduced demand for indoor tanning and decrease the number of employees hired in these facilities (there are currently about 1000 employees in the industry). Indoor tanning ban among women younger than 18 year-old would reduce the employmenet by 10% in the industry. A full indoor tanning ban would reduce the employmenet by 80%. We assume that the average annual salary of an employee is 28,000 Canadian dollars. The Ontario Ministry of Health would like to conduct cost-effectiveness analysis for the health benefit over the lifetime of a cohort of 10-year-old girls by considering the cost. The Ministry of Health does not wish to discount outcomes.
+However, indoor tanning ban would result in reduced demand for indoor tanning and decrease the number of employees hired in these facilities (there are currently about 1000 employees in the industry). Indoor tanning ban among women younger than 18 year-old would reduce the employmenet by 10% in the industry. A full indoor tanning ban would reduce the employmenet by 80%. We assume that the average annual salary of an employee is 28,000 Canadian dollars. The Ontario Ministry of Health would like to conduct cost-effectiveness analysis for the health benefit over the lifetime of a cohort of 10-year-old girls by considering the cost. Because the outcome is life expectancy, the Ministry of Health does not wish to discount outcomes. (However, if the outcome is QALY, we would discount the outcome at 5% per year for Canadians!)
 
 1. Draw a Markov model diagram of tanning behavior and skin cancer that the Ontario Ministry of Health could use to evaluate their tanning policies in terms of the desired outcomes. Use a yearly time step. Include the following states: "Non-tanners", "Regular tanners", "Skin cancer", "Dead from skin cancer", and "Dead from other causes". Label all transition probabilities and indicate which are changing over time.
 
@@ -811,6 +811,10 @@ However, indoor tanning ban would result in reduced demand for indoor tanning an
 Before doing any actual coding: 
 
 1. Draw your Markov model diagram
+
+![](Figure/skin cancer.png)
+
+
 2. Figure out your parameters 
 
     + Which are fixed? 
@@ -827,9 +831,6 @@ Before doing any actual coding:
     
     + annual time step
 
-5. Draw your own Markov diagram
-
-![](Figure/skin cancer.png)
 
 ### Step 1. Set up parameters, data, and variables required
 
@@ -1108,7 +1109,6 @@ return(list(output = output, trace = trace_mat))
 * You could find the template Markov model function in the `CEAutil` package. 
 * You can modify the function for your project. 
 
-`r text_spec("Need discussion!! Should we illustrate how to calculate cost?", background = "#D05A6E", color = "white", bold = T)`
 
 ```{r}
 library(CEAutil)
