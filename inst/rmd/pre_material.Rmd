@@ -991,10 +991,10 @@ print(tr_mat[, , "50"])
 
 ```{r}
 # Check whether the transition matrices have any negative values or values > 1!!!
-if (sum(tr_mat > 1) | sum(tr_mat < 0)) stop("there are invalid transition probabilities")
+if (any(tr_mat > 1 | tr_mat < 0)) stop("there are invalid transition probabilities")
 
 # Check whether each row of a transition matrix sum up to 1!!!
-if (any(rowSums(t(apply(tr_mat, 3, rowSums))) != n_states)) stop("transition probabilities do not sum up to one")
+if (any(round(apply(tr_mat, 3, rowSums), 5) != 1)) stop("transition probabilities do not sum up to one")
 ```
 
 ### Step 3. Create the trace matrix and outcome matrix 
