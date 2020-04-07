@@ -811,14 +811,42 @@ However, indoor tanning ban would result in reduced demand for indoor tanning an
 Before doing any actual coding: 
 
 1. Draw your Markov model diagram
+
+![](Figure/skin cancer.png)
+
+
 2. Figure out your parameters 
+
+    + Which are fixed? 
+    + Which are time varying? 
+    + Do you have parameters that require calibration? 
+      
+        * This is not relevant to our example here but it might happen in your other projects.
+
 3. What is the time horizon? 
+  
+    + 100 years
+
 4. What is the cycle length? 
+    
+    + annual time step
+
 
 ### Step 1. Set up parameters, data, and variables required
 
 * We start with setting up parameter values, function, or transformation. 
 * Provide your parameter table: 
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE}
+library(kableExtra)
+
+input_table <- data.frame("parameter code" = c("p_init_tan", "p_halt_tan", "p_nontan_to_cancer", "p_regtan_to_cancer", "p_cancer_to_dead", "p_mort", "n_worker", "salary", "target_red", "universal_red"), 
+                          "definition" = c("probability of initiating tanning", "probability of discontinuing tanning", "probability of having skin cancer among non-tanners", "probability of having skin cancer among regular tanners", "probability of cancer-specific death", "probability of natural death", "number of workers", "average salary of tanning workers", "reduction of workers under targeted ban", "reduction of workers under universal ban"), 
+                          "data type" = c("table", "table", "constant", "constant", "constant", "table", "constant", "constant", "constant", "constant"))
+
+kable(input_table, col.names=c("parameter code", "definition", "data type")) %>% 
+  kable_styling(full_width = F, position = "center") 
+```
 
 * You could find the tanning behavior and the life table in the `CEAutil` package. 
 
@@ -1172,4 +1200,3 @@ tan_icer <- calculate_icers(res$Cost,
 print(tan_icer)
 plot(tan_icer)
 ```
-

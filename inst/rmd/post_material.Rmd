@@ -1202,7 +1202,7 @@ plot(tan_icer)
 ```
 
 
-# dampack
+# Sensitivity analysis with `dampack`
 
 ## Agenda
 
@@ -1215,9 +1215,9 @@ plot(tan_icer)
 ## Introduction of `dampack`
 
 * `dampack` is the decision analysis modeling package [here](https://github.com/DARTH-git/dampack). 
-* We have used some functionality in the past.  
+* We have used some functionalities in the past.  
 * This package includes functionalities for basic and advanced decision analysis. 
-* We will illustrate deterministic analysis and probabilistic analysis using the Dracula example and also show how to use dampack with the Markov model wrapper. 
+* We will illustrate deterministic sensitivity analysis and probabilistic sensitivity analysis using the Dracula example and the tanning example. 
 
 ```{r message = FALSE, warning = FALSE}
 library(CEAutil)
@@ -1259,7 +1259,7 @@ print(param_ls)
 
   + `outcomes`: The outcomes of interest. If you use the default setting `NULL`, `run_owsa_det` will run the one-way sensitivity analysis for every outcome. In our case, the outcomes include expectedEff1, expectedEff2, and Cost. You could also specify a subset of outcomes: 
 
-```{r}
+```{r, eval = F}
 outcomes = c("expectedEff1", "Cost")
 ```
   
@@ -1268,9 +1268,12 @@ outcomes = c("expectedEff1", "Cost")
   + `...`: Additional arguments for the user-defined function `FUN`. In our case, `dectree_wrapper()` requires `params_basecase`, `treefunc`, and `popsize`. We have already set up the `params_basecase`. Thus, for `...`, we need to add `treefunc` and `popsize`. 
 
 ```{r}
-owsa_out <- run_owsa_det(params_range, param_ls, nsamp = 100, 
-                         dectree_wrapper, 
-                         treefunc = treefunc, popsize = 200)
+owsa_out <- run_owsa_det(params_range = params_range, 
+                         params_basecase = param_ls, 
+                         nsamp = 100, 
+                         FUN = dectree_wrapper, 
+                         treefunc = treefunc, 
+                         popsize = 200)
 print(str(owsa_out))
 print(head(owsa_out$owsa_Cost))
 ```
@@ -1278,8 +1281,11 @@ print(head(owsa_out$owsa_Cost))
 * We can see how each parameter affects the cost and effectiveness. 
 
 ```{r}
-plot(owsa_out$owsa_expectedBlood)
-plot(owsa_out$owsa_Cost)
+plot(owsa_out$owsa_expectedBlood, maximize = T)
+plot(owsa_out$owsa_Cost, maximize = F)
+
+owsa_opt_strat(owsa_out$owsa_expectedBlood)
+owsa_opt_strat(owsa_out$owsa_Cost, maximize = F)
 ```
 
 
@@ -1305,11 +1311,14 @@ params_range <- data.frame(pars = c("p_bite", "C_drug"),
 * Run the two-way sensitivity analysis and see the two-way plots. 
 
 ```{r}
-twsa_out <- run_twsa_det(params_range, param_ls, nsamp = 10, 
-                         dectree_wrapper, 
-                         treefunc = treefunc, popsize = 200)
-plot(twsa_out$twsa_expectedBlood)
-plot(twsa_out$twsa_Cost)
+twsa_out <- run_twsa_det(params_range = params_range, 
+                         params_basecase = param_ls, 
+                         nsamp = 10, 
+                         FUN = dectree_wrapper, 
+                         treefunc = treefunc, 
+                         popsize = 200)
+plot(twsa_out$twsa_expectedBlood, maximize = T)
+plot(twsa_out$twsa_Cost, maximize = F)
 ```
 
 ## Probabilistic sensitivity analysis
@@ -1317,13 +1326,120 @@ plot(twsa_out$twsa_Cost)
 
 ### Generate your PSA samples
 
-* `gen_psa_samp()`
+* You can use `gen_psa_samp()` in `dampack` to generate your PSA samples
+* You could sample for multiple parameters from distributions that you specify
+* Suppose that `p_bite` follows a beta distribution with mean of 0.25 and standard deviation of 0.2, `C_drug` follows a gamma distribution with a mean of $10 and standard deviation of $10, and `p_inf_bitten` follows a beta distribution with a mean of 0.5 and standard deviation of 0.2. We want to conduct PSA among 100 sample sets from the distributions of `p_bite` and `C_drug`. We assumed that `p_bite` and `C_drug` are independent. 
+* We use `gen_psa_samp()` to sample 100 sample sets. You need to specify the following arguments: 
+
+  + `params`: names of the parameters (string vector)
+  + `dists`: distrbituion of each parameter (string vector)
+  + `dists_params`: parameters required for the distribution in `dists` (a list)
+  + check `help(gen_psa_samp)` for better understanding
+
+
+```{r}
+mysamp <- gen_psa_samp(params = c("p_bite", "C_drug", "p_inf_bitten"), 
+                       dists = c("beta", "gamma", "beta"), 
+                       parameterization_types = c("mean, sd", "mean, sd", "mean, sd"), 
+                       dists_params = list(c(0.25, 0.2), c(10, 10), c(0.5, 0.2)), 
+                       nsamp = 200)
+
+head(mysamp)
+```
+
+* Check the mean and sd 
+
+```{r}
+print(mean(mysamp$p_bite))
+print(sd(mysamp$p_bite))
+hist(mysamp$p_bite, col = "gold", border = F, main = "p_bite", breaks = 15)
+
+print(mean(mysamp$C_drug))
+print(sd(mysamp$C_drug))
+hist(mysamp$C_drug, col = "gold", border = F, main = "C_drug", breaks = 15)
+
+print(mean(mysamp$p_inf_bitten))
+print(sd(mysamp$p_inf_bitten))
+hist(mysamp$p_inf_bitten, col = "gold", border = F, main = "p_inf_bitten", breaks = 15)
+```
+
+* Because the code for `gen_psa_samp()` is a little complicated, we created a Shiny app for generating the code of `gen_psa_samp()`. Please follow the following steps to use the Shiny app. 
+
+1. Type the following code in your console: 
+
+```{r, eval = F}
+fpath <- system.file("app", package="CEAutil")
+shiny::runApp(paste0(fpath, "/app.R"))
+```
+
+2. This would evoke the Shiny app interface. 
+
+![](Figure/Shiny1.png)
+
+3. On this interface, you have to fill out the name of the parameters, the distribution, and the parameters of the distribution in the input area on the left-hand side. 
+4. Pay attention to the description of different distribution that you specified. You could only fill out one set of parameters for some distributions (e.g., beta, gamma, log-normal, etc.). 
+
+    + For example, if the distribution of the parameter is beta distribution, you could fill out either `a` and `b`, or `mean` and `sd`. 
+
+![](Figure/Shiny2.png)
+
+
+5. After you fill out the required values of a parameter on the left-hand side, the table on the right-hand side will display the values in a table. 
+6. Once you finish all the parameter inputs, click the button `generate code`. The App generates the `gen_psa_samp` code for you. 
+7. [CAUTION] This Shiny app is still under developmenet. 
+  
+    + If you input something inaccurate, you have to restart the Shiny app again! 
+    + This app doesn't work with distributions, including `bootstrap`, `dirichlet`, and `triangle`. 
+
 
 ### Conduct PSA
 
-* `run_psa`
+* We use `run_psa()` in `dampack` to conduct PSA
+
+```{r}
+psa_out <- run_psa(psa_samp = mysamp, 
+                   params_basecase = param_ls, 
+                   FUN = dectree_wrapper, 
+                   outcomes = c("expectedBlood", "Cost"), 
+                   strategies = c("st_Donothing", "st_Targetedantibiotics", "st_Universalantibiotics"), 
+                   currency = "$", 
+                   treefunc = treefunc)
+print(str(psa_out))
+```
+
+```{r}
+psa_obj <- make_psa_obj(cost = psa_out$Cost$other_outcome,
+                        effectiveness = psa_out$expectedBlood$other_outcome,
+                        parameters = psa_out$Cost$parameters,
+                        strategies = psa_out$Cost$strategies,
+                        currency = "$")
+
+plot(psa_obj)
+```
+
+
+## CEAC
+
+* Plot CEAC
+* There are only two input argumemtns: 
+
+
+    + `wtp`: a vector of Willingness to Pay
+    + `psa`: a PSA object
+
+```{r}
+ceac <- ceac(wtp = seq(0, 200, 5), 
+             psa_obj)
+plot(ceac)
+```
+
+
+* In this plot, we used very different WTP thresholds than normal analysis, so the WTP thresholds on the x-axis are much smaller
+* The effectiveness measure is not QALY here. Instead, the effectiveness measure is blood volume. Therefore, the interpretation of the WTP is $X per mL blood gained. 
 
 ## Conducting decision analysis using Markov model
+
+* This is an example of conducting one-/two-way sensitivity analysis and PSA using the Markov model we built before. 
 
 ```{r warning = FALSE}
 library(CEAutil)
@@ -1351,7 +1467,11 @@ res <- markov_decision_wrapper(vary_param_ls = vary_param_ls,
                         other_input_ls = other_input_ls, 
                         userfun = markov_model, 
                         strategy_set = c("null", "targeted_ban", "universal_ban"))
+```
 
+* One-way sensitivity analysis
+
+```{r}
 params_range <- data.frame(pars = c("p_regtan_to_cancer", "p_cancer_to_dead"), 
                            min = c(0.01, 0.01), 
                            max = c(0.1, 0.1))
@@ -1363,8 +1483,13 @@ owsa_out <- run_owsa_det(params_range,
                          userfun = markov_model, 
                          other_input_ls = other_input_ls, 
                          strategy_set = c("null", "targeted_ban", "universal_ban"))
-plot(owsa_out$owsa_LE)
 
+owsa_opt_strat(owsa_out$owsa_LE, maximize = T)
+```
+
+* Two-way sensitivity analysis
+
+```{r}
 twsa_out <- run_twsa_det(params_range, vary_param_ls, nsamp = 10, 
                          FUN = markov_decision_wrapper, 
                          userfun = markov_model, 
@@ -1373,5 +1498,39 @@ twsa_out <- run_twsa_det(params_range, vary_param_ls, nsamp = 10,
 plot(twsa_out$twsa_LE)
 ```
 
+* Probabilistic sensitivity analysis
 
+```{r}
+mysamp <- gen_psa_samp(params = c("p_regtan_to_cancer", "p_cancer_to_dead"), 
+                       dists = c("beta", "beta"), 
+                       parameterization_types = c("mean, sd", "mean, sd"), 
+                       dists_params = list(c(0.04, 0.01), c(0.07, 0.02)), 
+                       nsamp = 100)
+
+psa_out <- run_psa(psa_samp = mysamp, 
+                   params_basecase = vary_param_ls, 
+                   FUN = markov_decision_wrapper, 
+                   outcomes = c("LE", "Cost"), 
+                   strategies = res$strategy, 
+                   currency = "$", 
+                   userfun = markov_model, 
+                   strategy_set = res$strategy, 
+                   other_input_ls = other_input_ls)
+
+psa_obj <- make_psa_obj(cost = psa_out$Cost$other_outcome,
+                        effectiveness = psa_out$LE$other_outcome,
+                        parameters = psa_out$Cost$parameters,
+                        strategies = psa_out$Cost$strategies,
+                        currency = "$")
+
+plot(psa_obj)
+```
+
+* CEAC
+
+```{r}
+ceac <- ceac(wtp = seq(0, 20000000, 500000), 
+             psa_obj)
+plot(ceac)
+```
 
